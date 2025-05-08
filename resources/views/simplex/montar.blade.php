@@ -36,7 +36,7 @@
             </p>
         </header>
 
-        <form action="{{ route('simplex.resolver') }}" method="POST" class="space-y-14">
+        <form action="{{ route('simplex.formatar') }}" method="POST" class="space-y-14">
             @csrf
             <input type="hidden" name="tipo" value="{{ $tipo }}">
             <input type="hidden" name="variaveis" value="{{ $variaveis }}">

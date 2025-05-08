@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SimplexController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
@@ -26,14 +27,17 @@ Route::get('/simplex/montar', function (Request $request) {
     return view('simplex.montar', compact('tipo', 'variaveis', 'restricoes'));
 })->name('simplex.montar');
 
+// CONTROLLER PARA RESOLVER O MÉTODO
+Route::post('/simplex/formatar', [SimplexController::class, 'processar'])->name('simplex.formatar');
 
 
-Route::post('/simplex/resolver', function (Request $request) {
+
+/*
+    --- COMO ACESSAR OS DADOS DO PROBLEMA ---
+
     $tipo = $request->input('tipo');
     $variaveis = (int) $request->input('variaveis');
     $restricoes = (int) $request->input('restricoes');
     $z = $request->input('z'); // <- ESSA LINHA É ESSENCIAL
     $restricoesData = $request->input('restricoes');
-
-    return view('simplex.resultado', compact('tipo', 'variaveis', 'restricoes', 'z', 'restricoesData'));
-})->name('simplex.resolver');
+*/
