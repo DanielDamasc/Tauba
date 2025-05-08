@@ -1,7 +1,39 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/simplex', function () {
+    return 'Tela de entrada para os dados do problema';
+})->name('simplex.index');
+
+Route::get('/simplex', function () {
+    return view('simplex.escolha');
+})->name('simplex.escolha');
+
+Route::get('/simplex/dados', function () {
+    return view('simplex.dados');
+})->name('simplex.dados');
+Route::get('/simplex/montar', function (Request $request) {
+    $tipo = $request->input('tipo');
+    $variaveis = (int) $request->input('variaveis');
+    $restricoes = (int) $request->input('restricoes');
+
+    return view('simplex.montar', compact('tipo', 'variaveis', 'restricoes'));
+})->name('simplex.montar');
+
+
+
+Route::post('/simplex/resolver', function (Request $request) {
+    $tipo = $request->input('tipo');
+    $variaveis = (int) $request->input('variaveis');
+    $restricoes = (int) $request->input('restricoes');
+    $z = $request->input('z'); // <- ESSA LINHA É ESSENCIAL
+    $restricoesData = $request->input('restricoes');
+
+    return view('simplex.resultado', compact('tipo', 'variaveis', 'restricoes', 'z', 'restricoesData'));
+})->name('simplex.resolver');
