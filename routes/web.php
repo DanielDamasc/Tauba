@@ -9,16 +9,13 @@ Route::get('/', function () {
 });
 
 Route::get('/simplex', function () {
-    return 'Tela de entrada para os dados do problema';
-})->name('simplex.index');
-
-Route::get('/simplex', function () {
     return view('simplex.escolha');
 })->name('simplex.escolha');
 
 Route::get('/simplex/dados', function () {
     return view('simplex.dados');
 })->name('simplex.dados');
+
 Route::get('/simplex/montar', function (Request $request) {
     $tipo = $request->input('tipo');
     $variaveis = (int) $request->input('variaveis');
