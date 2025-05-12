@@ -154,9 +154,7 @@ class FormaAumentadaService
                 }
             }
         }
-        
-        dd($problema);
 
-        return $request;
+        return $problema;
     }
 }
