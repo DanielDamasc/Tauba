@@ -66,7 +66,7 @@ class FormaAumentadaService
             $problemaEstruturado[] = [
                 'coeficientes' => $valor,
                 'sinal' => $sinais[$linha],
-                'valor' => $termos[$linha]
+                'termo' => $termos[$linha]
             ];
         }
 
@@ -74,14 +74,19 @@ class FormaAumentadaService
         $VF = 1;
         $VE = -1;
         $VA = 1;
+        $bigM = 1000000000; // 1 bilhão para M
         $Xprox = $variaveis + 1;
         $Xcont = 0;
         $problema = [];
+        $copiaZ = $problemaEstruturado[0]; // cópia da função objetivo.
         foreach ($problemaEstruturado as $line => $value) {
-            $copiaLinha = $value; // cópia da estrutura da linha.
+            
             if ($value["sinal"] == null) {
-                $copiaZ = $value;
+                continue;
             }
+
+            // cópia das restrições para evitar manipulação por referência.
+            $copiaLinha = $value;
 
             for ($i = $Xprox; $i < $Xprox + $Xcont; $i++) {
                 if (!isset($copiaLinha["coeficientes"][$i])) {
@@ -89,39 +94,39 @@ class FormaAumentadaService
                 }
             }
             
-            if ($value["sinal"] != null) {
-                switch ($value["sinal"]) {
-                    case "<=":
-                        $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VF;
-                        $Xcont++;
-                        break;
+            switch ($value["sinal"]) {
+                case "<=":
+                    $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VF;
+                    $copiaZ["coeficientes"][$Xprox + $Xcont] = 0;
+                    $Xcont++;
+                    break;
 
-                    case "=":
-                        $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VA;
-                        $copiaZ["coeficientes"][$Xprox + $Xcont] = 
-                        $Xcont++;
-                        break;
+                case "=":
+                    $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VA;
+                    $copiaZ["coeficientes"][$Xprox + $Xcont] = $bigM;
+                    $Xcont++;
+                    break;
 
-                    case ">=":
-                        $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VE;
-                        $Xcont++;
-                        $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VA;
-                        $Xcont++;
-                        break;
+                case ">=":
+                    $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VE;
+                    $copiaZ["coeficientes"][$Xprox + $Xcont] = 0;
+                    $Xcont++;
+                    $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VA;
+                    $copiaZ["coeficientes"][$Xprox + $Xcont] = $bigM;
+                    $Xcont++;
+                    break;
 
-                }
             }
 
             $problema[] = $copiaLinha;
-
-            
         }
+        array_unshift($problema, $copiaZ); // insere a Z no topo
 
         // CONVERTENDO OS DADOS PARA FLOAT
         foreach ($problema as &$prob) {
             $prob["coeficientes"] = array_map('floatval', $prob["coeficientes"]);
 
-            $prob["valor"] = floatval($prob["valor"]);
+            $prob["termo"] = floatval($prob["termo"]);
         }
         unset($prob); // evita problemas relacionados a referência.
 
@@ -137,10 +142,10 @@ class FormaAumentadaService
         // INSERINDO OS ZEROS DEPOIS
         for ($i = 0; $i <= $restricoes; $i++) {
             for ($n = 1; $n <= $tamanho; $n++) {
-                if ($i == 0 && isset($problema[$i]["coeficientes"][$n])) {
+                if ($i == 0 && $problema[$i]["coeficientes"][$n] != 0) {
                     $coef = $problema[$i]["coeficientes"][$n];
-                    $coef = -$coef;
-                    $problema[$i]["coeficientes"][$n] = -$coef;
+                    $coefNeg = -$coef;
+                    $problema[$i]["coeficientes"][$n] = $coefNeg;
                 }
                 if (isset($problema[$i]["coeficientes"][$n])) {
                     continue;
