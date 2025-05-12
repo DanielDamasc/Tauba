@@ -6,11 +6,13 @@ namespace App\Services;
 
 class SimplexMaxService
 {
-    // ESTE MÉTODO DEVE RESOLVER PROBLEMAS DE MAXIMIZAÇÃO APLICANDO O MÉTODO SIMPLEX.
+    // Método que retorna a solução ótima do método simplex.
     public function simplexMax($tabela) {
 
         dd($tabela);
 
-        // VERIFICAR SE A LINHA Z PRECISA DE NORMALIZAÇÃO ...
+        $bigM = app('bigM');
+
+        // Verificar se a linha Z precisa de normalização.
     }
 }

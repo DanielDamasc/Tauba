@@ -24,7 +24,7 @@ Route::get('/simplex/montar', function (Request $request) {
     return view('simplex.montar', compact('tipo', 'variaveis', 'restricoes'));
 })->name('simplex.montar');
 
-// CONTROLLER PARA RESOLVER O MÉTODO
+// Controller para resolver o método.
 Route::post('/simplex/formatar', [SimplexController::class, 'processar'])->name('simplex.formatar');
 
 

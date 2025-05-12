@@ -8,13 +8,19 @@ use Illuminate\Http\Request;
 
 class SimplexController extends Controller
 {
-    // PROCESSA OS DADOS E CHAMA AS SERVICES PARA FORMA PADRÃO E RESOLUÇÃO DO ALGORITMO
+    public function __construct()
+    {
+        app()->instance('bigM', 1000000000); // Valor global de M.   
+    }
+
+    // Processa os dados chamando as services para executar.
     public function processar(Request $request) {
 
+        // Recebe a forma aumentada do problema no request.
         $formaAumentada = (new FormaAumentadaService())->formaAumentada($request);
 
-        // deve retornar a estrutura com o problema na sua forma ótima.
-        // para quando o problema não pode ser resolvido, deve retornar uma mensagem de erro.
+        // Deve retornar a estrutura com o problema na sua forma ótima.
+        // Para quando o problema não tem solução, deve fornecer algum tratamento.
         $simplexMax = (new SimplexMaxService())->simplexMax($formaAumentada);
 
     }
