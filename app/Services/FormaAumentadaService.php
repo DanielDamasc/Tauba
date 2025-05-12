@@ -82,21 +82,25 @@ class FormaAumentadaService
             switch ($value["sinal"]) {
                 case "<=":
                     $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VF;
+                    $copiaLinha["tipoVariavel"]["folga"] = $Xprox + $Xcont;
                     $copiaZ["coeficientes"][$Xprox + $Xcont] = 0;
                     $Xcont++;
                     break;
 
                 case "=":
                     $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VA;
+                    $copiaLinha["tipoVariavel"]["artificial"] = $Xprox + $Xcont;
                     $copiaZ["coeficientes"][$Xprox + $Xcont] = $bigM;
                     $Xcont++;
                     break;
 
                 case ">=":
                     $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VE;
+                    $copiaLinha["tipoVariavel"]["excesso"] = $Xprox + $Xcont;
                     $copiaZ["coeficientes"][$Xprox + $Xcont] = 0;
                     $Xcont++;
                     $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VA;
+                    $copiaLinha["tipoVariavel"]["artificial"] = $Xprox + $Xcont;
                     $copiaZ["coeficientes"][$Xprox + $Xcont] = $bigM;
                     $Xcont++;
                     break;
