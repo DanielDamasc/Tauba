@@ -18,11 +18,7 @@ class FormaAumentadaService
         $z = $request->input('z'); // array
         $restricoesData = $request->input('restricoes'); // array de array
 
-        // MOSTRANDO OS DADOS
-        echo $tipo . "<br>"; // max ou min
-        echo $variaveis . "<br>"; // quantidade de variaveis
-        echo $restricoes . "<br>"; // quantidade de restrições
-        echo "<br>";
+        // MOSTRANDO O PROBLEMA
         foreach ($z as $zElement) {
             // imprime cada elemento da linha Z
             echo $zElement . " ";
@@ -36,90 +32,125 @@ class FormaAumentadaService
             echo "<br>";
         }
 
-        // DADOS COM Z E RESTRIÇÕES JUNTOS
+        // JUNTANDO Z E RESTRIÇÕES
         $restricoesData[0] = $z;
         ksort($restricoesData);
 
-        // TESTES DE COMO EU VOU ADICIONAR AS VARIÁVEIS DE FOLGA
-        // $variavelFolga = '1';
-        // $variavelArtificial = '1';
-        // $variavelExcesso = '-1';
-        // $contVar = 0;
-        // $arrTeste = array_map(function($linhasProb) use ($variavelFolga, $variavelArtificial, $variavelExcesso, $contVar, $variaveis) {
-        //     // fazer condição para dar push das variáveis conforme a restrição ...
-        //     if (isset($linhasProb["sinal"])) {
-        //         switch ($linhasProb["sinal"]) {
-        //             case "<=":
-        //                 for ($i = 0; $i < $contVar; $i++) {
-        //                     array_push($linhasProb, '0');
-        //                 }
-        //                 $contVar++;
-        //                 array_push($linhasProb, $variavelFolga);
-        //                 break;
+        // RETIRANDO SINAIS E TERMOS DO ARRAY
+        $termos = [];
+        $sinais = [];
+        $coeficientes = [];
+        $i = 0;
+        foreach ($restricoesData as $rd) {
+            if (!isset($rd["rhs"])) {
+                $termos[$i] = null;
+            }
+            if (!isset($rd["sinal"])) {
+                $sinais[$i] = null;
+            }
+            if (isset($rd["rhs"])) {
+                $termos[$i] = array_pop($rd);
+            }
+            if (isset($rd["sinal"])) {
+                $sinais[$i] = array_pop($rd);
+            }
+            $coeficientes[] = $rd;
+            $i++;
+        }
 
-        //             case "=":
-        //                 for ($i = 0; $i < $contVar; $i++) {
-        //                     array_push($linhasProb, '0');
-        //                 }
-        //                 $contVar++;
-        //                 array_push($linhasProb, $variavelArtificial);
-        //                 break;
+        // ESTRUTURANDO O PROBLEMA
+        $problemaEstruturado = [];
 
-        //             case ">=":
-        //                 for ($i = 0; $i < $contVar; $i++) {
-        //                     array_push($linhasProb, '0');
-        //                 }
-        //                 $contVar += 2;
-        //                 array_push($linhasProb, $variavelExcesso, $variavelArtificial);
-        //                 break;
-        //         }
-        //     }
-        //    return [$linhasProb, $contVar];
-        // }, $restricoesData);
+        foreach ($coeficientes as $linha => $valor) {
 
-        $variavelFolga = '1';
-        $variavelExcesso = '-1';
-        $variavelArtificial = '1';
-        $contVar = 0;
-        $arrResultado = [];
-        $numVar = $variaveis + 1;
+            $problemaEstruturado[] = [
+                'coeficientes' => $valor,
+                'sinal' => $sinais[$linha],
+                'valor' => $termos[$linha]
+            ];
+        }
 
-        foreach ($restricoesData as $index => $restricao) {
-            $linha = $restricao; // cópia da linha
-
-            // adiciona zeros correspondentes às variáveis já adicionadas em restrições anteriores
-            for ($i = $numVar; $i < $contVar + $numVar; $i++) {
-                $linha["$i"] = '0';
+        // AUMENTANDO O PROBLEMA
+        $VF = 1;
+        $VE = -1;
+        $VA = 1;
+        $Xprox = $variaveis + 1;
+        $Xcont = 0;
+        $problema = [];
+        foreach ($problemaEstruturado as $line => $value) {
+            $copiaLinha = $value; // cópia da estrutura da linha.
+            if ($value["sinal"] == null) {
+                $copiaZ = $value;
             }
 
-            // adicionar variáveis conforme o sinal da restrição
-            if (isset($restricao["sinal"])) {
-                switch ($restricao["sinal"]) {
+            for ($i = $Xprox; $i < $Xprox + $Xcont; $i++) {
+                if (!isset($copiaLinha["coeficientes"][$i])) {
+                    $copiaLinha["coeficientes"][$i] = 0;
+                }
+            }
+            
+            if ($value["sinal"] != null) {
+                switch ($value["sinal"]) {
                     case "<=":
-                        $num = $contVar + $numVar;
-                        $linha["$num"] = $variavelFolga;
-                        $contVar++;
+                        $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VF;
+                        $Xcont++;
                         break;
 
                     case "=":
-                        $num = $contVar + $numVar;
-                        $linha["$num"] = $variavelArtificial;
-                        $contVar++;
+                        $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VA;
+                        $copiaZ["coeficientes"][$Xprox + $Xcont] = 
+                        $Xcont++;
                         break;
 
                     case ">=":
-                        $num = $contVar + $numVar;
-                        $linha["$num"] = $variavelExcesso;
-                        $contVar++;
-                        $num = $contVar + $numVar;
-                        $linha["$num"] = $variavelArtificial;
-                        $contVar++;
+                        $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VE;
+                        $Xcont++;
+                        $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VA;
+                        $Xcont++;
                         break;
+
                 }
             }
 
-            $arrResultado[] = $linha;
+            $problema[] = $copiaLinha;
+
+            
         }
+
+        // CONVERTENDO OS DADOS PARA FLOAT
+        foreach ($problema as &$prob) {
+            $prob["coeficientes"] = array_map('floatval', $prob["coeficientes"]);
+
+            $prob["valor"] = floatval($prob["valor"]);
+        }
+        unset($prob); // evita problemas relacionados a referência.
+
+        // TAMANHO DA MAIOR RESTRIÇÃO
+        $maior = -1;
+        for ($i = 1; $i <= $restricoes; $i++) {
+            $tamanho = count($problema[$i]["coeficientes"]);
+            if ($tamanho > $maior) {
+                $maior = $tamanho;
+            }
+        }
+
+        // INSERINDO OS ZEROS DEPOIS
+        for ($i = 0; $i <= $restricoes; $i++) {
+            for ($n = 1; $n <= $tamanho; $n++) {
+                if ($i == 0 && isset($problema[$i]["coeficientes"][$n])) {
+                    $coef = $problema[$i]["coeficientes"][$n];
+                    $coef = -$coef;
+                    $problema[$i]["coeficientes"][$n] = -$coef;
+                }
+                if (isset($problema[$i]["coeficientes"][$n])) {
+                    continue;
+                } else {
+                    array_push($problema[$i]["coeficientes"], 0);
+                }
+            }
+        }
+        
+        dd($problema);
 
         return $request;
     }
