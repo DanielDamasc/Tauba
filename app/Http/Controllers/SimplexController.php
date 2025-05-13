@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Services\FormaAumentadaService;
-use App\Services\SimplexMaxService;
+use App\Services\SolverSimplexMaxService;
+use App\Services\ZFormalizadaService;
 use Illuminate\Http\Request;
 
 class SimplexController extends Controller
@@ -19,9 +20,10 @@ class SimplexController extends Controller
         // Recebe a forma aumentada do problema no request.
         $formaAumentada = (new FormaAumentadaService())->formaAumentada($request);
 
-        // Deve retornar a estrutura com o problema na sua forma ótima.
-        // Para quando o problema não tem solução, deve fornecer algum tratamento.
-        $simplexMax = (new SimplexMaxService())->simplexMax($formaAumentada);
+        // Recebe a função objetivo sem variáveis artificiais.
+        $zFormalizada = (new ZFormalizadaService())->zFormalizada($formaAumentada);
 
+        // Recebe a estrutura da solução ótima aplicando o método simplex.
+        $solverSimplex = (new SolverSimplexMaxService())->solverSimplex($zFormalizada);
     }
 }
