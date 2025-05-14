@@ -24,6 +24,8 @@ class SimplexController extends Controller
         $zFormalizada = (new ZFormalizadaService())->zFormalizada($formaAumentada);
 
         // Recebe a estrutura da solução ótima aplicando o método simplex.
-        $solverSimplex = (new SolverSimplexMaxService())->solverSimplex($zFormalizada);
+        $resultado = (new SolverSimplexMaxService())->solverSimplex($zFormalizada);
+    
+        return view('simplex.resultado', $resultado);
     }
 }
