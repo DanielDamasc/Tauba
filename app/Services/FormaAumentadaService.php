@@ -7,8 +7,7 @@ namespace App\Services;
 class FormaAumentadaService
 {
     // Método que retorna os dados estruturados e na forma aumentada. 
-    public function formaAumentada($request)
-    {
+    public function formaAumentada($request) {
 
         $bigM = app('bigM');
 
@@ -19,10 +18,9 @@ class FormaAumentadaService
         $z = $request->input('z'); // array.
         $restricoesData = $request->input('restricoes'); // array de array.
 
-        // Separar função objetivo das restrições
-        $zLinha = $z;
-        $restricoesData = array_values($restricoesData); // Resetar índices
-        array_unshift($restricoesData, $zLinha); // Adicionar Z no início
+        // Juntando função objetivo e as restrições.
+        $restricoesData[0] = $z;
+        ksort($restricoesData);
 
         // Retirando sinais e termos do array.
         $termos = [];
@@ -42,13 +40,7 @@ class FormaAumentadaService
             if (isset($rd["sinal"])) {
                 $sinais[$i] = array_pop($rd);
             }
-            // Preencher com zeros até o número de variáveis originais
-            $coefLinha = [];
-            for ($k = 0; $k < $variaveis; $k++) {
-                $coefLinha[$k] = $rd[$k] ?? 0;
-            }
-            $coeficientes[] = $coefLinha;
-            
+            $coeficientes[] = $rd;
             $i++;
         }
 
@@ -73,7 +65,7 @@ class FormaAumentadaService
         $problema = [];
         $copiaZ = $problemaEstruturado[0]; // Cópia da função objetivo.
         foreach ($problemaEstruturado as $line => $value) {
-
+            
             if ($value["sinal"] == null) {
                 continue;
             }
@@ -86,47 +78,38 @@ class FormaAumentadaService
                     $copiaLinha["coeficientes"][$i] = 0;
                 }
             }
-
+            
             switch ($value["sinal"]) {
                 case "<=":
                     $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VF;
                     $copiaLinha["tipoVariavel"]["folga"] = $Xprox + $Xcont;
-                    $copiaZ = $problemaEstruturado[0];
+                    $copiaZ["coeficientes"][$Xprox + $Xcont] = 0;
                     $Xcont++;
                     break;
 
                 case "=":
                     $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VA;
                     $copiaLinha["tipoVariavel"]["artificial"] = $Xprox + $Xcont;
-                    $copiaZ = $problemaEstruturado[0];
+                    $copiaZ["coeficientes"][$Xprox + $Xcont] = $bigM;
                     $Xcont++;
                     break;
 
                 case ">=":
                     $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VE;
                     $copiaLinha["tipoVariavel"]["excesso"] = $Xprox + $Xcont;
-                    $copiaZ = $problemaEstruturado[0];
+                    $copiaZ["coeficientes"][$Xprox + $Xcont] = 0;
                     $Xcont++;
                     $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VA;
                     $copiaLinha["tipoVariavel"]["artificial"] = $Xprox + $Xcont;
-                    $copiaZ = $problemaEstruturado[0];
+                    $copiaZ["coeficientes"][$Xprox + $Xcont] = $bigM;
                     $Xcont++;
                     break;
+
             }
 
             $problema[] = $copiaLinha;
         }
         array_unshift($problema, $copiaZ); // Insere a Z no topo.
-
-        // Garantir que todos os coeficientes tenham o mesmo tamanho
-        $maxColunas = max(array_map('count', array_column($problema, 'coeficientes')));
-        foreach ($problema as &$linha) {
-            while (count($linha['coeficientes']) < $maxColunas) {
-                array_push($linha['coeficientes'], 0);
-            }
-            ksort($linha['coeficientes']); // Ordenar as chaves
-        }
-        unset($linha);
 
         // Convertendo os dados para float.
         foreach ($problema as &$prob) {
@@ -146,32 +129,20 @@ class FormaAumentadaService
         }
 
         // Insere os 0's após com base neste tamanho.
-        // Retorna o tamanho da maior restrição
-        $tamanho = count($problema[0]["coeficientes"]); // Baseado na linha Z
-
-        // Insere os 0's após com base neste tamanho
         for ($i = 0; $i <= $restricoes; $i++) {
-            // Reindexar coeficientes
-            if ($i == 0) {
-                for ($n = 0; $n < $variaveis; $n++) {
-                    $problema[$i]["coeficientes"][$n] *= -1;
+            for ($n = 1; $n <= $tamanho; $n++) {
+                if ($i == 0 && $problema[$i]["coeficientes"][$n] != 0) {
+                    $coef = $problema[$i]["coeficientes"][$n];
+                    $coefNeg = -$coef;
+                    $problema[$i]["coeficientes"][$n] = $coefNeg;
+                }
+                if (isset($problema[$i]["coeficientes"][$n])) {
+                    continue;
+                } else {
+                    array_push($problema[$i]["coeficientes"], 0);
                 }
             }
-
-            // Preencher com zeros até o tamanho máximo
-            $problema[$i]["coeficientes"] = array_pad(
-                $problema[$i]["coeficientes"],
-                $tamanho,
-                0
-            );
         }
-        $maxColunas = max(array_map('count', array_column($problema, 'coeficientes')));
-        foreach ($problema as &$linha) {
-            while (count($linha['coeficientes']) < $maxColunas) {
-                array_push($linha['coeficientes'], 0);
-            }
-        }
-        unset($linha);
 
         return $problema;
     }
