@@ -31,11 +31,12 @@
     </style>
 </head>
 
-<body class="bg-gradient-to-br from-[#f0f4ff] via-[#e1ecf7] to-[#dce9f5] min-h-screen py-12 px-6">
-
+<body class="bg-gradient-to-br from-[#C69C6D] via-[#ffe4c6] to-[#B88960] min-h-screen py-12 px-6">
     <!-- Botão Voltar -->
     <a href="{{ url()->previous() }}"
-        class="absolute top-6 right-6 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-indigo-600 rounded-full shadow hover:bg-indigo-700 transition-all duration-300">
+        class="absolute top-6 right-6 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white 
+          rounded-full shadow-md transition-all duration-300 
+          bg-gradient-to-br from-[#A9745B] to-[#8B5E3C] border border-[#5C3A21] hover:brightness-110">
         ← Voltar para a montagem
     </a>
 
@@ -43,14 +44,14 @@
 
         {{-- Cabeçalho --}}
         <header class="text-center">
-            <h1 class="mb-2 text-5xl font-extrabold text-gray-900">Resultado da Solução Algébrica</h1>
-            <p class="text-lg text-gray-600">Abaixo estão as iterações do método Simplex</p>
+            <h1 class="mb-2 text-5xl font-extrabold tracking-tight text-[#5C3A21]">Resultado da Solução Algébrica</h1>
+            <p class="mb-12 text-lg text-amber-950 sm:text-xl">Abaixo estão as iterações do método Simplex</p>
         </header>
 
         {{-- Iterações (Exemplo Estático) --}}
         @foreach ($iteracoes as $iteracao)
-<div class="overflow-hidden bg-white border border-gray-200 shadow-lg rounded-2xl">
-    <div class="px-6 py-4 text-lg font-semibold text-gray-800 bg-indigo-100">
+<div class="overflow-hidden bg-white border border-orange-100 shadow-lg rounded-2xl">
+    <div class="px-6 py-4 text-lg font-semibold text-amber-950 bg-orange-100">
         Iteração {{ $iteracao['passo'] }} 
         @if ($iteracao['colunaPivo'] !== null)
             - Encontrando Pivô
@@ -60,7 +61,7 @@
     </div>
     <div class="overflow-x-auto">
         <table class="min-w-full text-lg text-center">
-            <thead class="text-gray-700 bg-indigo-50">
+            <thead class="text-amber-900 bg-orange-50">
                 <tr>
                     <th class="p-4 text-left">Variável</th>
                     @foreach ($iteracao['tabela'][0]['coeficientes'] as $key => $value)
@@ -72,18 +73,18 @@
             <tbody>
                 @foreach ($iteracao['tabela'] as $i => $linha)
                 <tr class="border-b">
-                    <td class="p-4 font-semibold text-left text-indigo-700">
+                    <td class="p-4 font-semibold text-left text-amber-800">
                         {{ $i === 0 ? 'Z' : 'R' . $i }}
                     </td>
                     @foreach ($linha['coeficientes'] as $j => $coef)
-                        <td class="p-3 
+                        <td class="text-amber-950 p-3 
                             @if ($j == $iteracao['colunaPivo'] && $i == $iteracao['linhaPivo']) cell-pivot
                             @elseif ($j == $iteracao['colunaPivo']) cell-red
                             @endif">
                             {{ number_format($coef, 2) }}
                         </td>
                     @endforeach
-                    <td class="p-3">{{ number_format($linha['termo'], 2) }}</td>
+                    <td class="p-3 text-amber-950">{{ number_format($linha['termo'], 2) }}</td>
                 </tr>
                 @endforeach
             </tbody>
@@ -93,17 +94,17 @@
 @endforeach
 
 {{-- Resultado Final --}}
-<div class="max-w-2xl p-8 mx-auto mt-16 text-center bg-white border-l-8 border-indigo-600 shadow-xl rounded-2xl">
-    <div class="flex items-center justify-center gap-3 mb-4 text-4xl font-extrabold text-indigo-700">
+<div class="max-w-2xl p-8 mx-auto mt-16 text-center bg-amber-50 border-l-8 border-amber-800 shadow-xl rounded-2xl">
+    <div class="flex items-center justify-center gap-3 mb-4 text-4xl font-extrabold text-amber-800">
         Solução ótima encontrada
     </div>
-    <p class="mt-2 text-3xl font-bold text-gray-800">
-        Z = <span class="text-indigo-700">{{ number_format($solucao['Z'], 2) }}</span>
+    <p class="mt-2 text-3xl font-bold text-amber-900">
+        Z = <span class="text-amber-800">{{ number_format($solucao['Z'], 2) }}</span>
     </p>
-    <p class="mt-4 text-xl text-gray-600">
+    <p class="mt-4 text-xl text-amber-900">
         @foreach ($solucao as $var => $valor)
             @if ($var !== 'Z')
-                {{ $var }} = <span class="font-semibold text-indigo-600">{{ number_format($valor, 2) }}</span>,
+                {{ $var }} = <span class="font-semibold text-amber-800">{{ number_format($valor, 2) }}</span>&nbsp;&nbsp;
             @endif
         @endforeach
     </p>

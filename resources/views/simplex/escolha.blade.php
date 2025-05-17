@@ -15,26 +15,26 @@
 </head>
 
 <body
-    class="bg-gradient-to-br from-[#f0f4ff] via-[#e1ecf7] to-[#dce9f5] min-h-screen flex items-center justify-center px-6 py-12">
+    class="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-[#C69C6D] via-[#ffe4c6] to-[#B88960] overflow-hidden">
 
     <main class="w-full max-w-4xl text-center">
-        <h1 class="mb-6 text-4xl font-extrabold text-gray-900 sm:text-5xl">Qual tipo de problema você quer resolver?
+        <h1 class="mb-6 text-6xl sm:text-7xl font-extrabold tracking-tight text-[#5C3A21]">Qual tipo de problema você quer resolver?
         </h1>
-        <p class="mb-12 text-lg text-gray-600 sm:text-xl">Escolha o tipo de função objetivo para começar:</p>
+        <p class="mb-12 text-lg text-amber-950 sm:text-xl">Escolha o tipo de função objetivo para começar:</p>
 
         <div class="grid gap-6 sm:grid-cols-2">
             <!-- Maximização -->
             <a href="{{ route('simplex.dados', ['tipo' => 'max']) }}"
-                class="block p-8 transition-all bg-white border border-gray-200 shadow-md rounded-2xl hover:bg-indigo-50 hover:shadow-xl">
-                <h2 class="mb-2 text-2xl font-bold text-indigo-600">Maximização</h2>
-                <p class="text-gray-500">Quando você quer obter o maior valor possível (ex: lucro, produção).</p>
+                class="block p-8 transition-all rounded-2xl shadow-inner shadow-[#5C3A21]/40 border-2 border-[#5C3A21] bg-gradient-to-br from-[#D8B28E] via-[#C69C6D] to-[#B88960] hover:scale-105">
+                <h2 class="mb-2 text-2xl font-bold text-amber-50">Maximização</h2>
+                <p class="text-amber-900">Quando você quer obter o maior valor possível (ex: lucro, produção).</p>
             </a>
 
             <!-- Minimização -->
             <a href="{{ route('simplex.dados', ['tipo' => 'min']) }}"
-                class="block p-8 transition-all bg-white border border-gray-200 shadow-md rounded-2xl hover:bg-indigo-50 hover:shadow-xl">
-                <h2 class="mb-2 text-2xl font-bold text-purple-600">Minimização</h2>
-                <p class="text-gray-500">Quando o objetivo é reduzir custos, desperdícios ou tempo.</p>
+                class="block p-8 transition-all rounded-2xl shadow-inner shadow-[#5C3A21]/40 border-2 border-[#5C3A21] bg-gradient-to-br from-[#D8B28E] via-[#C69C6D] to-[#B88960] hover:scale-105">
+                <h2 class="mb-2 text-2xl font-bold text-amber-50">Minimização</h2>
+                <p class="text-amber-900">Quando o objetivo é reduzir custos, desperdícios ou tempo.</p>
             </a>
         </div>
     </main>

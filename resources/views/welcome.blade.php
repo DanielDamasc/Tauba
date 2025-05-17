@@ -39,32 +39,29 @@
     </style>
 </head>
 
-<body
-    class="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-[#f0f4ff] via-[#e1ecf7] to-[#dce9f5] overflow-hidden">
-
-
+<body class="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-[#C69C6D] via-[#ffe4c6] to-[#B88960] overflow-hidden">
 
     <!-- Conteúdo central -->
     <main class="z-10 px-6 text-center">
-        <h1 class="mb-6 text-6xl font-extrabold tracking-tight text-gray-900 sm:text-7xl drop-shadow">
+        <h1 class="mb-6 text-6xl sm:text-7xl font-extrabold tracking-tight text-[#5C3A21]">
             Táuba
         </h1>
 
-        <p class="max-w-2xl mx-auto mb-12 text-lg leading-relaxed text-gray-600 sm:text-2xl">
-            Resolvendo problemas de <span class="font-semibold text-indigo-600">Programação
+        <p class="max-w-2xl mx-auto mb-12 text-lg leading-relaxed text-amber-950 sm:text-2xl">
+            Resolvendo problemas de <span class="font-semibold text-amber-800">Programação
                 Linear</span>.<br>
 
         </p>
 
         <!-- Botão -->
         <a href="{{ route('simplex.escolha') }}"
-            class="inline-flex items-center justify-center px-8 py-4 text-xl font-semibold text-white transition-all duration-300 ease-in-out bg-indigo-600 rounded-full shadow-lg hover:bg-indigo-700 hover:scale-105">
+           class="inline-flex items-center justify-center px-8 py-4 text-xl font-semibold text-white rounded-full hover:scale-105 transition-all duration-300 ease-in-out bg-gradient-to-br from-[#8B5E3C] to-[#A9745B] border-2 border-[#5C3A21] shadow-inner">
             Começar agora →
         </a>
     </main>
 
     <!-- Rodapé -->
-    <footer class="absolute z-10 w-full text-sm text-center text-gray-400 bottom-4">
+    <footer class="absolute z-10 w-full text-sm text-center text-amber-700 bottom-4">
         &copy; {{ date('Y') }} Táuba.
     </footer>
 </body>
