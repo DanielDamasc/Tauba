@@ -17,6 +17,18 @@ class SimplexController extends Controller
     // Processa os dados chamando as services para executar.
     public function processar(Request $request) {
 
+        // Esquece o problema anterior.
+        $request->session()->forget('tipo');
+        $request->session()->forget('variaveis');
+        $request->session()->forget('restricoes');
+        $request->session()->forget('z');
+
+        // Coloca o request na session.
+        $request->session()->put('tipo', $request->input('tipo'));
+        $request->session()->put('variaveis', $request->input('variaveis'));
+        $request->session()->put('restricoes', $request->input('restricoes'));
+        $request->session()->put('z', $request->input('z'));
+
         // Recebe a forma aumentada do problema no request.
         $formaAumentada = (new FormaAumentadaService())->formaAumentada($request);
 

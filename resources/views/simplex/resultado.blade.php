@@ -33,7 +33,7 @@
 
 <body class="bg-gradient-to-br from-[#C69C6D] via-[#ffe4c6] to-[#B88960] min-h-screen py-12 px-6">
     <!-- Botão Voltar -->
-    <a href="{{ url()->previous() }}"
+    <a href="{{ route('simplex.montar') }}"
         class="absolute top-6 right-6 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white 
           rounded-full shadow-md transition-all duration-300 
           bg-gradient-to-br from-[#A9745B] to-[#8B5E3C] border border-[#5C3A21] hover:brightness-110">

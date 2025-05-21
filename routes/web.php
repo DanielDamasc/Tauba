@@ -17,11 +17,25 @@ Route::get('/simplex/dados', function () {
 })->name('simplex.dados');
 
 Route::get('/simplex/montar', function (Request $request) {
-    $tipo = $request->input('tipo');
-    $variaveis = (int) $request->input('variaveis');
-    $restricoes = (int) $request->input('restricoes');
+    if (
+        $request->input('tipo') != null &&
+        $request->input('variaveis') != null &&
+        $request->input('restricoes') != null
+        ) {
+        $tipo = $request->input('tipo');
+        $variaveis = (int) $request->input('variaveis');
+        $restricoes = (int) $request->input('restricoes');
+        return view('simplex.montar', compact('tipo', 'variaveis', 'restricoes'));
+    }
+    
+    $tipo = $request->session()->get('tipo');
+    $variaveis = (int) $request->session()->get('variaveis');
+    $restricoesDados = $request->session()->get('restricoes');
+    $restricoes = count($restricoesDados);
+    $z = $request->session()->get('z');
 
-    return view('simplex.montar', compact('tipo', 'variaveis', 'restricoes'));
+    return view('simplex.montar', compact('tipo', 'variaveis', 'restricoesDados', 'restricoes', 'z'));
+
 })->name('simplex.montar');
 
 // Nova rota para processar a solução

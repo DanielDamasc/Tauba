@@ -20,7 +20,7 @@
 
 <body class="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-[#C69C6D] via-[#ffe4c6] to-[#B88960]">
 
-    <a href="{{ route('simplex.dados') }}"
+    <a href="{{ route('simplex.dados', ['tipo' => $tipo]) }}"
         class="absolute top-6 right-6 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white 
           rounded-full shadow-md transition-all duration-300 
           bg-gradient-to-br from-[#A9745B] to-[#8B5E3C] border border-[#5C3A21] hover:brightness-110">
@@ -59,7 +59,7 @@
                         <tr class="border-b bg-orange-50">
                             <td class="px-6 py-4 font-bold text-left text-amber-800">Z</td>
                             @for ($v = 1; $v <= $variaveis; $v++) <td class="px-4 py-3">
-                                <input type="number" step="any" name="z[{{ $v }}]" placeholder="0"
+                                <input value="{{ old('z.' . $v, $z[$v] ?? '') }}" type="number" step="any" name="z[{{ $v }}]" placeholder="0"
                                     class="w-full px-4 py-2 text-center text-[#5C3A21] border border-[#A9745B] shadow-sm rounded-xl focus:ring-2 bg-[#FDF5E6] focus:ring-[#8B5E3C] placeholder-[#a3785c] focus:outline-none" />
                                 </td>
                                 @endfor
@@ -71,20 +71,20 @@
                         @for ($r = 1; $r <= $restricoes; $r++) <tr class="border-b bg-white hover:bg-orange-100">
                             <td class="px-6 py-4 font-semibold text-left text-amber-900">R{{ $r }}</td>
                             @for ($v = 1; $v <= $variaveis; $v++) <td class="px-4 py-3">
-                                <input type="number" step="any" name="restricoes[{{ $r }}][{{ $v }}]" placeholder="0"
+                                <input value="{{ old('restricoes.' . $r . $v, $restricoesDados[$r][$v] ?? '') }}" type="number" step="any" name="restricoes[{{ $r }}][{{ $v }}]" placeholder="0"
                                     class="w-full px-4 py-2 text-center text-[#5C3A21] border border-[#A9745B] shadow-sm rounded-xl focus:ring-2 bg-[#FDF5E6] focus:ring-[#8B5E3C] placeholder-[#a3785c] focus:outline-none" />
                                 </td>
                                 @endfor
                                 <td class="px-4 py-3">
                                     <select name="restricoes[{{ $r }}][sinal]"
                                         class="w-full px-4 py-2 border text-[#5C3A21] bg-[#FDF5E6] border-[#A9745B] shadow-sm rounded-xl focus:ring-2 focus:ring-[#8B5E3C] focus:outline-none">
-                                        <option value="<=">&le;</option>
-                                        <option value="=">=</option>
-                                        <option value=">=">&ge;</option>
+                                        <option value="<=" @selected(old('restricoes.' . $r . "sinal", $restricoesDados[$r]["sinal"] ?? '<=') == '<=')>&le;</option>
+                                        <option value="=" @selected(old('restricoes.' . $r . "sinal", $restricoesDados[$r]["sinal"] ?? '<=') == '=')>=</option>
+                                        <option value=">=" @selected(old('restricoes.' . $r . "sinal", $restricoesDados[$r]["sinal"] ?? '<=') == '>=')>&ge;</option>
                                     </select>
                                 </td>
                                 <td class="px-4 py-3">
-                                    <input type="number" step="any" name="restricoes[{{ $r }}][rhs]" placeholder="0"
+                                    <input value="{{ old('restricoes.' . $r ."rhs", $restricoesDados[$r]["rhs"] ?? '') }}" type="number" step="any" name="restricoes[{{ $r }}][rhs]" placeholder="0"
                                         class="w-full px-4 py-2 text-center text-[#5C3A21] border border-[#A9745B] shadow-sm rounded-xl focus:ring-2 bg-[#FDF5E6] focus:ring-[#8B5E3C] placeholder-[#a3785c] focus:outline-none" />
                                 </td>
                                 </tr>
