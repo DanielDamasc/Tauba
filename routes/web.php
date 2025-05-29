@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\SimplexController;
 use App\Http\Controllers\MontarController;
+use App\Http\Controllers\ImportController;
+use App\Http\Controllers\DownloadController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
@@ -30,6 +32,13 @@ Route::get('/simplex/resultado', function () {
     return view('simplex.resultado');
 })->name('simplex.resultado');
 
+// Rota do import de problemas existentes.
+Route::post('/simplex/importar', [ImportController::class, 'importar'])
+    ->name('simplex.importar');
+
+// Rota para download de problemas.
+Route::post('/simplex/download', [DownloadController::class, 'download'])
+    ->name('simplex.download');
 
 
 /*
