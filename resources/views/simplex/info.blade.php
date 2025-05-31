@@ -43,11 +43,13 @@
 
 <body class="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-[#C69C6D] via-[#ffe4c6] to-[#B88960] overflow-hidden">
 
+
     <div class="absolute top-6 left-6 flex flex-col gap-2">
-        <a href="{{ route('simplex.info') }}" class="duration-300 hover:scale-110">
-            <i class="fa-solid fa-circle-info bg-[linear-gradient(224.36deg,_#995026_27.29%,_#5C3A21_62.58%)] bg-clip-text text-transparent text-2xl"></i>
+        <a href="{{ route('simplex.index') }}" class="duration-300 hover:scale-110">
+            <i class="fa-solid fa-house bg-[linear-gradient(224.36deg,_#995026_27.29%,_#5C3A21_62.58%)] bg-clip-text text-transparent text-2xl"></i>
         </a>
     </div>
+
     <!-- Conteúdo central -->
     <main class="z-10 px-6 text-center">
         <h1 class="mb-6 text-6xl sm:text-7xl font-extrabold tracking-tight text-[#5C3A21]">
@@ -55,16 +57,35 @@
         </h1>
 
         <p class="max-w-2xl mx-auto mb-12 text-lg leading-relaxed text-amber-950 sm:text-2xl">
-            Resolvendo problemas de <span class="font-semibold text-amber-800">Programação
-                Linear</span>.<br>
+            <span class="font-semibold text-amber-800">Tutorial: </span>Como usar?<br>
 
         </p>
 
-        <!-- Botão -->
-        <a href="{{ route('simplex.escolha') }}"
-            class="inline-flex items-center justify-center px-8 py-4 text-xl font-semibold text-white rounded-full hover:scale-105 transition-all duration-300 ease-in-out bg-gradient-to-br from-[#8B5E3C] to-[#A9745B] border-2 border-[#5C3A21] shadow-inner">
-            Começar agora →
-        </a>
+    <!-- Tutorial -->
+    <section class="max-w-3xl mx-auto text-left bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-md text-amber-900">
+        <ol class="space-y-4 list-decimal list-inside">
+            <li>
+                <span class="font-semibold">Escolha o tipo de problema:</span> maximização ou minimização.
+                <p class="text-sm text-amber-700 italic">Dica: você também pode importar um problema já salvo (JSON).</p>
+            </li>
+            <li>
+                <span class="font-semibold">Indique o número de variáveis e restrições:</span> numa escala de 1 a 10.
+            </li>
+            <li>
+                <span class="font-semibold">Preencha os dados:</span> insira os coeficientes da função objetivo e das restrições.
+            </li>
+            <li>
+                <span class="font-semibold">Escolha a forma de sulucionar:</span> método geométrico, algébrico ou tabular.
+            </li>
+            <li>
+                <span class="font-semibold">Clique em "Resolver":</span> o sistema vai calcular o passo a passo do método Simplex.
+            </li>
+            <li>
+                <span class="font-semibold">Pronto:</span> o Táuba mostrará a solução ótima com o passo a passo da solução.
+                <p class="text-sm text-amber-700 italic">Dica: você pode salvar o problema em JSON para usá-lo novamente caso queira.</p>
+            </li>
+        </ol>
+    </section>
     </main>
 
     <!-- Rodapé -->

@@ -9,7 +9,11 @@ use Illuminate\Http\Request;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('simplex.index');
+
+Route::get('/simplex/info', function () {
+    return view('simplex.info');
+})->name('simplex.info');
 
 Route::get('/simplex', function () {
     return view('simplex.escolha');
@@ -37,7 +41,7 @@ Route::post('/simplex/importar', [ImportController::class, 'importar'])
     ->name('simplex.importar');
 
 // Rota para download de problemas.
-Route::post('/simplex/download', [DownloadController::class, 'download'])
+Route::get('/simplex/download', [DownloadController::class, 'download'])
     ->name('simplex.download');
 
 

@@ -7,7 +7,8 @@ namespace App\Services;
 class FormaAumentadaService
 {
     // Método que retorna os dados estruturados e na forma aumentada. 
-    public function formaAumentada($request) {
+    public function formaAumentada($request)
+    {
 
         $bigM = app('bigM');
 
@@ -65,7 +66,7 @@ class FormaAumentadaService
         $problema = [];
         $copiaZ = $problemaEstruturado[0]; // Cópia da função objetivo.
         foreach ($problemaEstruturado as $line => $value) {
-            
+
             if ($value["sinal"] == null) {
                 continue;
             }
@@ -78,7 +79,7 @@ class FormaAumentadaService
                     $copiaLinha["coeficientes"][$i] = 0;
                 }
             }
-            
+
             switch ($value["sinal"]) {
                 case "<=":
                     $copiaLinha["coeficientes"][$Xprox + $Xcont] = $VF;
@@ -104,7 +105,6 @@ class FormaAumentadaService
                     $copiaZ["coeficientes"][$Xprox + $Xcont] = $bigM;
                     $Xcont++;
                     break;
-
             }
 
             $problema[] = $copiaLinha;

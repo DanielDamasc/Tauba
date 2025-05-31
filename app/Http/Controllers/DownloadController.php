@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Response;
 
 class DownloadController extends Controller
 {
-    public function download(Request $request) {
+    public function download(Request $request)
+    {
         // dd($request->session()->all());
 
         // Recupera os dados da session.
@@ -17,7 +18,7 @@ class DownloadController extends Controller
         $variaveis = $request->session()->get('variaveis');
         $restricoes = $request->session()->get('restricoes');
         $z = $request->session()->get('z');
-        
+
         // Estrutura os dados.
         $dados = [
             "tipo" => $tipo,
@@ -36,7 +37,6 @@ class DownloadController extends Controller
         return Response::make($dadosJSON, 200, [
             'Content-Type' => 'application/json',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]);
-        
+        ]); //aqui pode levar um with( 'success' => 'Problema baixado com sucesso!') ???
     }
 }

@@ -27,7 +27,7 @@ class SolverSimplexMaxService
             $linhaPivo = $this->encontrarLinhaPivo($tabela, $colunaPivo);
 
             if ($linhaPivo === null) {
-                throw new \Exception("Problema ilimitado.");
+                throw new \Exception;
             }
 
             // Registrar estado atual da tabela antes do pivô
