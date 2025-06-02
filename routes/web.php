@@ -1,12 +1,19 @@
 <?php
 
 use App\Http\Controllers\SimplexController;
+use App\Http\Controllers\MontarController;
+use App\Http\Controllers\ImportController;
+use App\Http\Controllers\DownloadController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('simplex.index');
+
+Route::get('/simplex/info', function () {
+    return view('simplex.info');
+})->name('simplex.info');
 
 Route::get('/simplex', function () {
     return view('simplex.escolha');
@@ -16,23 +23,26 @@ Route::get('/simplex/dados', function () {
     return view('simplex.dados');
 })->name('simplex.dados');
 
-Route::get('/simplex/montar', function (Request $request) {
-    $tipo = $request->input('tipo');
-    $variaveis = (int) $request->input('variaveis');
-    $restricoes = (int) $request->input('restricoes');
+// Rota que trata o request no controller.
+Route::get('/simplex/montar', [MontarController::class, 'montar'])
+    ->name('simplex.montar');
 
-    return view('simplex.montar', compact('tipo', 'variaveis', 'restricoes'));
-})->name('simplex.montar');
-
-// Nova rota para processar a solução
+// Nova rota para processar a solução.
 Route::post('/simplex/resolver', [SimplexController::class, 'processar'])
     ->name('simplex.resolver');
 
-// Rota para exibir resultados (opcional, se precisar de uma URL separada)
+// Rota para exibir resultados (opcional, se precisar de uma URL separada).
 Route::get('/simplex/resultado', function () {
     return view('simplex.resultado');
 })->name('simplex.resultado');
 
+// Rota do import de problemas existentes.
+Route::post('/simplex/importar', [ImportController::class, 'importar'])
+    ->name('simplex.importar');
+
+// Rota para download de problemas.
+Route::get('/simplex/download', [DownloadController::class, 'download'])
+    ->name('simplex.download');
 
 
 /*

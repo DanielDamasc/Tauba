@@ -7,7 +7,8 @@ namespace App\Services;
 class ZFormalizadaService
 {
     // Método que retira as variáveis artificiais da função objetivo.
-    public function zFormalizada($tabela) {
+    public function zFormalizada($tabela)
+    {
 
         $bigM = app('bigM');
 
@@ -39,10 +40,8 @@ class ZFormalizadaService
                 }
                 $tabela[0]["termo"] += $bigM * $copiaPivot["termo"];
             }
-            
         }
 
         return $tabela;
-        
     }
 }

@@ -16,7 +16,8 @@ class SimplexController extends Controller
     }
 
     // Processa os dados chamando as services para executar.
-    public function processar(Request $request) {
+    public function processar(Request $request)
+    {
 
         /// Validar o tipo de objetivo
         $tipoObjetivo = strtolower($request->input('tipo'));
