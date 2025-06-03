@@ -20,7 +20,7 @@ class SimplexController extends Controller
     // Processa os dados chamando as services para executar.
     public function processar(Request $request)
     {
-        // Em caso de erro, redireciona de volta com a mensagem de erro (Toastr).
+        // Pega os dados do request.
         $tipo = $request->input('tipo');
         $variaveis = (int) $request->input('variaveis');
         $restricoesDados = $request->input('restricoes');

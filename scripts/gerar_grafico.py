@@ -12,6 +12,10 @@ import matplotlib.pyplot as plt
 restricoesJSON = sys.argv[1]
 restricoes = json.loads(restricoesJSON)
 
+# Inicializar limites para escala.
+xmax = 0
+ymax = 0
+
 # Definindo o intervalo para x.
 x = np.linspace(0, 50, 500)
 
@@ -24,8 +28,24 @@ for restricao in restricoes:
     sinal = restricao['sinal']
     termo = float(restricao['termo'])
 
-    a = float(coef["1"])
-    b = float(coef["2"])
+    # Trata os casos para problemas de uma ou duas variáveis.
+    if len(coef) == 1:
+        a = float(coef["1"])
+        b = 0
+    
+    if len(coef) == 2:
+        a = float(coef["1"])
+        b = float(coef["2"])
+
+    if a != 0:
+        intersec_x = termo / a
+        if intersec_x > xmax:
+            xmax = intersec_x
+
+    if b != 0:
+        intersec_y = termo / b
+        if intersec_y > ymax:
+            ymax = intersec_y
 
     # Evitar divisão por zero.
     if b != 0:
@@ -44,9 +64,12 @@ for restricao in restricoes:
     elif sinal == ">=":
         plt.fill_between(x, y, 50, where=(y >= 0), alpha=0.2)
 
+# Definindo o limite superior da escala.
+lim_sup = 2 * (max(xmax, ymax))
+
 # Configurações.
-plt.xlim(0, 10)
-plt.ylim(0, 10)
+plt.xlim(0, lim_sup)
+plt.ylim(0, lim_sup)
 plt.xlabel('x')
 plt.ylabel('y')
 plt.title('Região de Viabilidade - Simplex')
