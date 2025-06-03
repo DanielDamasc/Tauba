@@ -31,11 +31,6 @@ Route::get('/simplex/montar', [MontarController::class, 'montar'])
 Route::post('/simplex/resolver', [SimplexController::class, 'processar'])
     ->name('simplex.resolver');
 
-// Rota para exibir resultados (opcional, se precisar de uma URL separada).
-Route::get('/simplex/resultado', function () {
-    return view('simplex.resultado');
-})->name('simplex.resultado');
-
 // Rota do import de problemas existentes.
 Route::post('/simplex/importar', [ImportController::class, 'importar'])
     ->name('simplex.importar');
