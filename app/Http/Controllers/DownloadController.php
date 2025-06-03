@@ -11,8 +11,6 @@ class DownloadController extends Controller
 {
     public function download(Request $request)
     {
-        // dd($request->session()->all());
-
         // Recupera os dados da session.
         $tipo = $request->session()->get('tipo');
         $variaveis = $request->session()->get('variaveis');

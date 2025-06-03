@@ -7,6 +7,7 @@ use App\Services\SolverSimplexMaxService;
 use App\Services\ZFormalizadaService;
 use App\Services\EstruturaGraficoService;
 use App\Services\GerarGraficoService;
+use App\Services\PutOnSessionService;
 use Illuminate\Http\Request;
 
 class SimplexController extends Controller
@@ -30,10 +31,7 @@ class SimplexController extends Controller
         if ($request["metodo"] == "algebrica") {
             try {
                 // Coloca o request atual na session.
-                $request->session()->put('tipo', $request->input('tipo'));
-                $request->session()->put('variaveis', $request->input('variaveis'));
-                $request->session()->put('restricoes', $request->input('restricoes'));
-                $request->session()->put('z', $request->input('z'));
+                (new PutOnSessionService())->putOnSession($request);
 
                 // Recebe a forma aumentada do problema no request.
                 $formaAumentada = (new FormaAumentadaService())->formaAumentada($request);
@@ -59,6 +57,9 @@ class SimplexController extends Controller
                 return view('simplex.montar', compact('tipo', 'variaveis', 'restricoesDados', 'restricoes', 'z') + ['error' => 'Erro: solução geométrica deve conter no máximo duas variáveis.']);
             }
 
+            // Coloca o request atual na session.
+            (new PutOnSessionService())->putOnSession($request);
+
             // Captura as restrições e joga na Service.
             $restricoesData = $request['restricoes'];
 
@@ -66,10 +67,13 @@ class SimplexController extends Controller
             $estruturaGrafico = (new EstruturaGraficoService())->estruturaGrafico($restricoesData);
 
             // Service integrada com python que gera solução gráfica.
-            $caminho = (new GerarGraficoService())->gerarGrafico($estruturaGrafico);
+            $fileName = (new GerarGraficoService())->gerarGrafico($estruturaGrafico);
 
-            // Retorna caminho para view que mostra a imagem.
-            dd($caminho["caminho"]);
+            // Pega nome do arquivo (str).
+            $nome = $fileName["nome"];
+
+            // Retorna nome do arquivo para view que mostra a imagem.
+            return view('simplex.geometrica', compact('nome'));
         }
         
         return view('simplex.montar', compact('tipo', 'variaveis', 'restricoesDados', 'restricoes', 'z') + ['error' => 'Erro: método de solução indefinido.']);

@@ -57,5 +57,8 @@ plt.legend()
 caminho_saida = '../public/graficos/solucao.png'
 plt.savefig(caminho_saida)
 
+# Nome do arquivo.
+file_name = 'solucao.png'
+
 # Retorno pro Laravel.
-print(json.dumps({"caminho": caminho_saida}))
+print(json.dumps({"nome": file_name}))
