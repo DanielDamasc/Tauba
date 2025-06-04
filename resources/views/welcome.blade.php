@@ -45,7 +45,7 @@
 
     <div class="absolute top-6 left-6 flex flex-col gap-2">
         <a href="{{ route('simplex.info') }}" class="duration-300 hover:scale-110">
-            <i class="fa-solid fa-circle-info bg-[linear-gradient(224.36deg,_#995026_27.29%,_#5C3A21_62.58%)] bg-clip-text text-transparent text-2xl"></i>
+            <img class="w-8" src="{{ asset('assets/info.svg') }}" alt="Saiba mais" title="Saiba mais">
         </a>
     </div>
     <!-- Conteúdo central -->

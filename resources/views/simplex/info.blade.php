@@ -5,7 +5,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Táuba</title>
-    <script src="https://kit.fontawesome.com/cc9f72a45c.js" crossorigin="anonymous"></script>
 
     <!-- Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
@@ -43,10 +42,9 @@
 
 <body class="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-[#C69C6D] via-[#ffe4c6] to-[#B88960] overflow-hidden">
 
-
     <div class="absolute top-6 left-6 flex flex-col gap-2">
         <a href="{{ route('simplex.index') }}" class="duration-300 hover:scale-110">
-            <i class="fa-solid fa-house bg-[linear-gradient(224.36deg,_#995026_27.29%,_#5C3A21_62.58%)] bg-clip-text text-transparent text-2xl"></i>
+            <img class="w-8" src="{{ asset('assets/home.svg') }}" alt="Voltar para a página inicial" title="Voltar para a página inicial">
         </a>
     </div>
 
