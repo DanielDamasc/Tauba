@@ -4,23 +4,18 @@ use App\Http\Controllers\SimplexController;
 use App\Http\Controllers\MontarController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\DownloadController;
+
+use App\Http\Middleware\CleanSessionMiddleware;
+
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('simplex.index');
-
-Route::get('/simplex/info', function () {
-    return view('simplex.info');
-})->name('simplex.info');
-
-Route::get('/simplex', function () {
-    return view('simplex.escolha');
-})->name('simplex.escolha');
-
-Route::get('/simplex/dados', function () {
-    return view('simplex.dados');
-})->name('simplex.dados');
+// Grupo de rotas que o middleware que limpa a session deve atuar.
+Route::middleware(CleanSessionMiddleware::class)->group(function () {
+    Route::get('/', function () {return view('welcome');})->name('simplex.index');
+    Route::get('/simplex/info', function () {return view('simplex.info');})->name('simplex.info');
+    Route::get('/simplex', function () {return view('simplex.escolha');})->name('simplex.escolha');
+    Route::get('/simplex/dados', function () {return view('simplex.dados');})->name('simplex.dados');
+});
 
 // Rota que trata o request no controller.
 Route::get('/simplex/montar', [MontarController::class, 'montar'])

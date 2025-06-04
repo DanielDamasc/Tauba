@@ -27,7 +27,7 @@
         <a href="{{ route('simplex.index') }}" class="duration-300 hover:scale-110">
             <img class="w-8" src="{{ asset('assets/home.svg') }}" alt="Voltar para a página inicial" title="Voltar para a página inicial">
         </a>
-        <a href="{{ route('simplex.montar') }}" class="duration-300 hover:scale-110">
+        <a href="{{ route('simplex.escolha') }}" class="duration-300 hover:scale-110">
             <img class="w-8" src="{{ asset('assets/back.svg') }}" alt="Voltar para a etapa anterior" title="Voltar para a etapa anterior">
         </a>
     </div>
