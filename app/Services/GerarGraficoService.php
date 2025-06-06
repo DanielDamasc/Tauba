@@ -13,10 +13,10 @@ class GerarGraficoService
         $restricoesJSON = json_encode($restricoes);
 
         // Caminho para o Python da venv.
-        $pathVenv = "C:\laragon\www\Tauba\packages\Scripts\python.exe";
+        $pathVenv = base_path('packages\Scripts\python.exe');
 
         // Caminho para o código.
-        $path = "C:\laragon\www\Tauba\scripts\gerar_grafico.py";
+        $path = base_path('scripts\gerar_grafico.py');
 
         // Instancia a process e executa.
         $process = new Process([$pathVenv, $path, $restricoesJSON]);
