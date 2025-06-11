@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\FormaAumentadaService;
-use App\Services\SolverSimplexMaxService;
+use App\Services\SolverSimplexService;
 use App\Services\ZFormalizadaService;
 use App\Services\EstruturaGraficoService;
 use App\Services\GerarGraficoService;
@@ -40,7 +40,7 @@ class SimplexController extends Controller
                 $zFormalizada = (new ZFormalizadaService())->zFormalizada($formaAumentada);
 
                 // Recebe a estrutura da solução ótima aplicando o método simplex.
-                $resultado = (new SolverSimplexMaxService())->solverSimplex($zFormalizada);
+                $resultado = (new SolverSimplexService())->solverSimplex($zFormalizada, strtolower($tipo));
 
                 return view('simplex.resultado', $resultado);
             } catch (\Exception) {
