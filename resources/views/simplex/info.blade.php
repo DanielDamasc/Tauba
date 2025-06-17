@@ -50,7 +50,7 @@
 
     <!-- Conteúdo central -->
     <main class="z-10 px-6 text-center">
-        <h1 class="mb-6 text-6xl sm:text-7xl font-extrabold tracking-tight text-[#5C3A21]">
+        <h1 class="mx-12 mb-6 text-6xl sm:text-7xl font-extrabold tracking-tight text-[#5C3A21]">
             Táuba
         </h1>
 

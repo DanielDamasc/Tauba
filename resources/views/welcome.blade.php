@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Táuba</title>
     <script src="https://kit.fontawesome.com/cc9f72a45c.js" crossorigin="anonymous"></script>
-
+    <!-- favicon -->
+    <link rel="icon" type="image/x-icon" href="https://github.com/user-attachments/assets/43fded72-1c2e-4c13-b8b4-398b8555c623">
     <!-- Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
@@ -50,9 +51,12 @@
     </div>
     <!-- Conteúdo central -->
     <main class="z-10 px-6 text-center">
-        <h1 class="mb-6 text-6xl sm:text-7xl font-extrabold tracking-tight text-[#5C3A21]">
-            Táuba
-        </h1>
+        <div class="flex flex-row gap-2 justify-center align-middle">
+            <img class="h-16 md:h-20" src="https://github.com/user-attachments/assets/43fded72-1c2e-4c13-b8b4-398b8555c623" alt="Tauba Logo" title="Tauba logo">
+            <h1 class="mb-6 text-6xl sm:text-7xl font-extrabold tracking-tight text-[#5C3A21]">
+                Táuba
+            </h1>
+        </div>
 
         <p class="max-w-2xl mx-auto mb-12 text-lg leading-relaxed text-amber-950 sm:text-2xl">
             Resolvendo problemas de <span class="font-semibold text-amber-800">Programação
@@ -76,27 +80,27 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     @if(isset($success))
-        <script>
-            toastr.success("{{ $success }}");
-        </script>
+    <script>
+        toastr.success("{{ $success }}");
+    </script>
     @endif
 
     @if(isset($error))
-        <script>
-            toastr.error("{{ $error }}");
-        </script>
+    <script>
+        toastr.error("{{ $error }}");
+    </script>
     @endif
 
     @if(isset($info))
-        <script>
-            toastr.info("{{ $info }}");
-        </script>
+    <script>
+        toastr.info("{{ $info }}");
+    </script>
     @endif
 
     @if(isset($warning))
-        <script>
-            toastr.warning("{{ $warning }}");
-        </script>
+    <script>
+        toastr.warning("{{ $warning }}");
+    </script>
     @endif
 </body>
 

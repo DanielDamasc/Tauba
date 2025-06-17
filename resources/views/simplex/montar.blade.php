@@ -32,7 +32,7 @@
     </div>
     <div class="mx-auto max-w-7xl">
         <header class="mb-12 text-center mx-6">
-            <h1 class="mb-2 text-5xl font-extrabold tracking-tight text-[#5C3A21]">Montar Problema</h1>
+            <h1 class="mx-12 mb-2 text-5xl font-extrabold tracking-tight text-[#5C3A21]">Montar Problema</h1>
             <p class="mb-12 text-lg text-amber-950 sm:text-xl">
                 Informe os coeficientes da função objetivo e das restrições para a
                 <span class="font-semibold text-amber-800">{{ $tipo === 'min' ? 'minimização' : 'maximização' }}</span>.
