@@ -129,6 +129,11 @@
                     </label>
                 </div>
             </section>
+            
+            <div class="flex items-center justify-center mt-6">
+                <input type="checkbox" id="integer_solution" name="integer_solution" value="1" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+                <label for="integer_solution" class="ml-2 text-lg font-medium text-gray-900">Encontrar Solução Inteira (Branch and Bound)</label>
+            </div>
 
             <!-- Botão -->
             <div class="flex justify-center pt-4">

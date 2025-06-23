@@ -8,6 +8,7 @@ use App\Services\ZFormalizadaService;
 use App\Services\EstruturaGraficoService;
 use App\Services\GerarGraficoService;
 use App\Services\PutOnSessionService;
+use App\Services\BranchAndBoundService; // Adicionado
 use Illuminate\Http\Request;
 
 class SimplexController extends Controller
@@ -26,26 +27,37 @@ class SimplexController extends Controller
         $restricoesDados = $request->input('restricoes');
         $restricoes = count($restricoesDados);
         $z = $request->input('z');
+        $isInteger = $request->has('integer_solution'); // Verifica se a solução inteira foi solicitada
+
+        // Coloca o request atual na session.
+        (new PutOnSessionService())->putOnSession($request);
 
         // Lógica para a solução tabular.
         if ($request["metodo"] == "algebrica") {
             try {
-                // Coloca o request atual na session.
-                (new PutOnSessionService())->putOnSession($request);
-
                 // Recebe a forma aumentada do problema no request.
                 $formaAumentada = (new FormaAumentadaService())->formaAumentada($request);
 
-                // Recebe a função objetivo sem variáveis artificiais.
-                $zFormalizada = (new ZFormalizadaService())->zFormalizada($formaAumentada);
+                if ($isInteger) {
+                    // Instancia e usa o BranchAndBoundService
+                    $branchAndBoundService = app(BranchAndBoundService::class);
+                    $resultado = $branchAndBoundService->solve($formaAumentada, $tipo, $variaveis);
+                    $resultado['is_branch_and_bound'] = true;
+                    return view('simplex.resultado', $resultado);
 
-                // Recebe a estrutura da solução ótima aplicando o método simplex.
-                $resultado = (new SolverSimplexService())->solverSimplex($zFormalizada, strtolower($tipo));
+                } else {
+                    // Recebe a função objetivo sem variáveis artificiais.
+                    $zFormalizada = (new ZFormalizadaService())->zFormalizada($formaAumentada);
 
-                return view('simplex.resultado', $resultado);
-            } catch (\Exception) {
+                    // Recebe a estrutura da solução ótima aplicando o método simplex.
+                    $resultado = (new SolverSimplexService())->solverSimplex($zFormalizada, strtolower($tipo));
+                    $resultado['is_branch_and_bound'] = false;
+                    return view('simplex.resultado', $resultado);
+                }
 
-                return view('simplex.montar', compact('tipo', 'variaveis', 'restricoesDados', 'restricoes', 'z') + ['error' => 'Erro: problema ilimitado.']);
+            } catch (\Exception $e) {
+
+                return view('simplex.montar', compact('tipo', 'variaveis', 'restricoesDados', 'restricoes', 'z') + ['error' => 'Erro: ' . $e->getMessage()]);
             }
         }
 
@@ -56,9 +68,6 @@ class SimplexController extends Controller
             if ($variaveis > 2) {
                 return view('simplex.montar', compact('tipo', 'variaveis', 'restricoesDados', 'restricoes', 'z') + ['error' => 'Erro: solução geométrica deve conter no máximo duas variáveis.']);
             }
-
-            // Coloca o request atual na session.
-            (new PutOnSessionService())->putOnSession($request);
 
             // Captura as restrições e joga na Service.
             $restricoesData = $request['restricoes'];
