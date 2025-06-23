@@ -34,7 +34,7 @@
     
 
     <main class="mx-6 max-w-4xl text-center">
-        <h1 class="mb-6 text-6xl sm:text-7xl font-extrabold tracking-tight text-[#5C3A21]">
+        <h1 class="mx-12 mb-6 text-6xl sm:text-7xl font-extrabold tracking-tight text-[#5C3A21]">
             Estrutura do Problema
         </h1>
         <p class="mb-12 text-lg text-amber-950 sm:text-xl">

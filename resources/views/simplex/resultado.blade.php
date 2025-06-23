@@ -72,7 +72,7 @@
 
         {{-- Cabeçalho --}}
         <header class="text-center">
-            <h1 class="mb-2 text-5xl font-extrabold tracking-tight text-[#5C3A21]">Resultado da Solução Algébrica</h1>
+            <h1 class="mx-12 mb-2 text-5xl font-extrabold tracking-tight text-[#5C3A21]">Resultado da Solução Algébrica</h1>
             <p class="mb-12 text-lg text-amber-950 sm:text-xl">Abaixo estão as iterações do método Simplex</p>
         </header>
 

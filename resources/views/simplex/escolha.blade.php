@@ -25,7 +25,7 @@
     </div>
 
     <main class="w-full max-w-4xl text-center">
-        <h1 class="mb-6 text-6xl sm:text-7xl font-extrabold tracking-tight text-[#5C3A21]">Qual tipo de problema você quer resolver?
+        <h1 class="mx-12 mb-6 text-6xl sm:text-7xl font-extrabold tracking-tight text-[#5C3A21]">Qual tipo de problema você quer resolver?
         </h1>
         <p class="mb-12 text-lg text-amber-950 sm:text-xl">Escolha o tipo de função objetivo para começar:</p>
 
