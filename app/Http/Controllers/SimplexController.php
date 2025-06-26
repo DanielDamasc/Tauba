@@ -15,7 +15,7 @@ class SimplexController extends Controller
 {
     public function __construct()
     {
-        app()->instance('bigM', 1000000000); // Valor global de M.   
+        app()->instance('bigM', 1000000000); // Valor global de M.
     }
 
     // Processa os dados chamando as services para executar.
@@ -27,7 +27,6 @@ class SimplexController extends Controller
         $restricoesDados = $request->input('restricoes');
         $restricoes = count($restricoesDados);
         $z = $request->input('z');
-        $isInteger = $request->has('integer_solution'); // Verifica se a solução inteira foi solicitada
 
         // Coloca o request atual na session.
         (new PutOnSessionService())->putOnSession($request);
@@ -38,22 +37,13 @@ class SimplexController extends Controller
                 // Recebe a forma aumentada do problema no request.
                 $formaAumentada = (new FormaAumentadaService())->formaAumentada($request);
 
-                if ($isInteger) {
-                    // Instancia e usa o BranchAndBoundService
-                    $branchAndBoundService = app(BranchAndBoundService::class);
-                    $resultado = $branchAndBoundService->solve($formaAumentada, $tipo, $variaveis);
-                    $resultado['is_branch_and_bound'] = true;
-                    return view('simplex.resultado', $resultado);
+                // Recebe a função objetivo sem variáveis artificiais.
+                $zFormalizada = (new ZFormalizadaService())->zFormalizada($formaAumentada);
 
-                } else {
-                    // Recebe a função objetivo sem variáveis artificiais.
-                    $zFormalizada = (new ZFormalizadaService())->zFormalizada($formaAumentada);
-
-                    // Recebe a estrutura da solução ótima aplicando o método simplex.
-                    $resultado = (new SolverSimplexService())->solverSimplex($zFormalizada, strtolower($tipo));
-                    $resultado['is_branch_and_bound'] = false;
-                    return view('simplex.resultado', $resultado);
-                }
+                // Recebe a estrutura da solução ótima aplicando o método simplex.
+                $resultado = (new SolverSimplexService())->solverSimplex($zFormalizada, strtolower($tipo));
+                $resultado['is_branch_and_bound'] = false;
+                return view('simplex.resultado', $resultado);
 
             } catch (\Exception $e) {
 
@@ -84,7 +74,18 @@ class SimplexController extends Controller
             // Retorna nome do arquivo para view que mostra a imagem.
             return view('simplex.geometrica', compact('nome'));
         }
-        
+
+        if ($request["metodo"] == "inteira") {
+            // Recebe a forma aumentada do problema no request.
+            $formaAumentada = (new FormaAumentadaService())->formaAumentada($request);
+
+            // Instancia e usa o BranchAndBoundService
+            $branchAndBoundService = app(BranchAndBoundService::class);
+            $resultado = $branchAndBoundService->solve($formaAumentada, $tipo, $variaveis);
+            $resultado['is_branch_and_bound'] = true;
+            return view('simplex.resultado', $resultado);
+        }
+
         return view('simplex.montar', compact('tipo', 'variaveis', 'restricoesDados', 'restricoes', 'z') + ['error' => 'Erro: método de solução indefinido.']);
     }
 }

@@ -112,14 +112,14 @@
 
 
             <!-- Escolha de método -->
-            <section class="max-w-4xl mx-auto mt-12 mb-6 px-6">
+            <section class="max-w-8xl mx-auto mt-12 mb-6 px-6">
                 <h2 class="mb-4 text-xl font-semibold text-amber-950">Como deseja resolver o problema?</h2>
                 <div class="flex flex-col gap-6 sm:flex-row">
                     <label
                         class="flex items-center w-full gap-3 p-4 transition-all border-[#5C3A21] bg-white border shadow-sm cursor-pointer rounded-2xl bg-gradient-to-br from-[#D8B28E] via-[#C69C6D] to-[#B88960] shadow-[#5C3A21]/40 hover:shadow-md hadow-inner sm:w-1/2">
                         <input type="radio" name="metodo" value="geometrica" required
                             class="w-5 h-5 accent-amber-800" />
-                        <span class="text-lg text-white">Solução Geométrica</span>
+                        <span class="text-lg text-white">Solução Gráfica</span>
                     </label>
                     <label
                         class="flex items-center w-full gap-3 p-4 transition-all border-[#5C3A21] bg-white border shadow-sm cursor-pointer rounded-2xl bg-gradient-to-br from-[#D8B28E] via-[#C69C6D] to-[#B88960] shadow-[#5C3A21]/40 hover:shadow-md hadow-inner sm:w-1/2">
@@ -127,13 +127,14 @@
                             class="w-5 h-5 accent-amber-800" />
                         <span class="text-lg text-white">Solução Algébrica</span>
                     </label>
+                    <label
+                        class="flex items-center w-full gap-3 p-4 transition-all border-[#5C3A21] bg-white border shadow-sm cursor-pointer rounded-2xl bg-gradient-to-br from-[#D8B28E] via-[#C69C6D] to-[#B88960] shadow-[#5C3A21]/40 hover:shadow-md hadow-inner sm:w-1/2">
+                        <input type="radio" name="metodo" value="inteira" required
+                            class="w-5 h-5 accent-amber-800" />
+                        <span class="text-lg text-white">Solução Inteira<small> (Branch and Bound)</small></span>
+                    </label>
                 </div>
             </section>
-            
-            <div class="flex items-center justify-center mt-6">
-                <input type="checkbox" id="integer_solution" name="integer_solution" value="1" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
-                <label for="integer_solution" class="ml-2 text-lg font-medium text-gray-900">Encontrar Solução Inteira (Branch and Bound)</label>
-            </div>
 
             <!-- Botão -->
             <div class="flex justify-center pt-4">

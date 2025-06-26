@@ -73,7 +73,7 @@
                 <span class="font-semibold">Preencha os dados:</span> insira os coeficientes da função objetivo e das restrições.
             </li>
             <li>
-                <span class="font-semibold">Escolha a forma de sulucionar:</span> método geométrico, algébrico ou tabular.
+                <span class="font-semibold">Escolha a forma de sulucionar:</span> método gráfico, algébrico ou branch and bound.
             </li>
             <li>
                 <span class="font-semibold">Clique em "Resolver":</span> o sistema vai calcular o passo a passo do método Simplex.
