@@ -6,7 +6,7 @@ namespace App\Services;
 
 class EstruturaGraficoService
 {
-    public function estruturaGrafico($dadosRestricoes)
+    public function estruturaGrafico($dadosRestricoes, $z, $solucao)
     {
         // Retirando sinais e termos do array.
         $termos = [];
@@ -33,9 +33,18 @@ class EstruturaGraficoService
         // Estruturando o problema.
         $estrutura = [];
 
+        // Adiciona a solução ótima.
+        $estrutura["solucao_otima"] = $solucao;
+
+        // Adiciona a função objetivo.
+        $estrutura["funcao_objetivo"] = $z;
+
+        // Inicializa o sub array de restrições.
+        $estrutura["restricoes"] = [];
+
         foreach ($coeficientes as $linha => $valor) {
 
-            $estrutura[] = [
+            $estrutura["restricoes"][] = [
                 'coeficientes' => $valor,
                 'sinal' => $sinais[$linha],
                 'termo' => $termos[$linha]

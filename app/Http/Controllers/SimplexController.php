@@ -53,17 +53,23 @@ class SimplexController extends Controller
 
         // Lógica para a solução geométrica.
         if ($request["metodo"] == "geometrica") {
-
             // Se for maior do que 2, retorna com erro, não pode fazer solução geométrica.
             if ($variaveis > 2) {
                 return view('simplex.montar', compact('tipo', 'variaveis', 'restricoesDados', 'restricoes', 'z') + ['error' => 'Erro: solução geométrica deve conter no máximo duas variáveis.']);
             }
 
-            // Captura as restrições e joga na Service.
+            // Aplica a forma algébrica para calcular o resultado previamente.
+            $formaAumentada = (new FormaAumentadaService())->formaAumentada($request);
+            $zFormalizada = (new ZFormalizadaService())->zFormalizada($formaAumentada);
+            $resultado = (new SolverSimplexService())->solverSimplex($zFormalizada, strtolower($tipo));
+            $solucao = $resultado["solucao"]["Z"];
+
+            // Captura os dados necessários.
             $restricoesData = $request['restricoes'];
+            $z = $request['z'];
 
             // Estrutura os dados usados na solução gráfica.
-            $estruturaGrafico = (new EstruturaGraficoService())->estruturaGrafico($restricoesData);
+            $estruturaGrafico = (new EstruturaGraficoService())->estruturaGrafico($restricoesData, $z, $solucao);
 
             // Service integrada com python que gera solução gráfica.
             $fileName = (new GerarGraficoService())->gerarGrafico($estruturaGrafico);
@@ -72,18 +78,25 @@ class SimplexController extends Controller
             $nome = $fileName["nome"];
 
             // Retorna nome do arquivo para view que mostra a imagem.
-            return view('simplex.geometrica', compact('nome'));
+            return view('simplex.geometrica', compact('nome', 'solucao'));
+
+            return view('simplex.montar', compact('tipo', 'variaveis', 'restricoesDados', 'restricoes', 'z') + ['error' => 'Erro: ' . $e->getMessage()]);
         }
 
         if ($request["metodo"] == "inteira") {
-            // Recebe a forma aumentada do problema no request.
-            $formaAumentada = (new FormaAumentadaService())->formaAumentada($request);
+            try {
+                // Recebe a forma aumentada do problema no request.
+                $formaAumentada = (new FormaAumentadaService())->formaAumentada($request);
 
-            // Instancia e usa o BranchAndBoundService
-            $branchAndBoundService = app(BranchAndBoundService::class);
-            $resultado = $branchAndBoundService->solve($formaAumentada, $tipo, $variaveis);
-            $resultado['is_branch_and_bound'] = true;
-            return view('simplex.resultado', $resultado);
+                // Instancia e usa o BranchAndBoundService
+                $branchAndBoundService = app(BranchAndBoundService::class);
+                $resultado = $branchAndBoundService->solve($formaAumentada, $tipo, $variaveis);
+                $resultado['is_branch_and_bound'] = true;
+                return view('simplex.resultado', $resultado);
+            } catch (\Exception $e) {
+
+                return view('simplex.montar', compact('tipo', 'variaveis', 'restricoesDados', 'restricoes', 'z') + ['error' => 'Erro: ' . $e->getMessage()]);
+            }
         }
 
         return view('simplex.montar', compact('tipo', 'variaveis', 'restricoesDados', 'restricoes', 'z') + ['error' => 'Erro: método de solução indefinido.']);

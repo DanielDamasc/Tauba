@@ -44,7 +44,7 @@
                 Solução ótima encontrada
             </div>
             <p class="mt-2 text-3xl font-bold text-amber-900">
-                Z = <span class="text-amber-800"></span>
+                Z = <span class="text-amber-800">{{$solucao}}</span>
             </p>
             <p class="mt-4 text-xl text-amber-900">
                 <span class="font-semibold text-amber-800"></span>&nbsp;&nbsp;

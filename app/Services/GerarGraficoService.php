@@ -7,10 +7,10 @@ use Symfony\Component\Process\Process;
 
 class GerarGraficoService
 {
-    public function gerarGrafico($restricoes)
+    public function gerarGrafico($problema)
     {
         // Transforma em JSON.
-        $restricoesJSON = json_encode($restricoes);
+        $problemaJSON = json_encode($problema);
 
         // Caminho para o Python da venv.
         $pathVenv = base_path('packages\Scripts\python.exe');
@@ -19,7 +19,7 @@ class GerarGraficoService
         $path = base_path('scripts\gerar_grafico.py');
 
         // Instancia a process e executa.
-        $process = new Process([$pathVenv, $path, $restricoesJSON]);
+        $process = new Process([$pathVenv, $path, $problemaJSON]);
         $process->run();
 
         if (!$process->isSuccessful()) {
@@ -31,7 +31,7 @@ class GerarGraficoService
 
         // Transforma JSON em array associativo.
         $resultado = json_decode($output, true);
-        
+
         return $resultado;
     }
 }

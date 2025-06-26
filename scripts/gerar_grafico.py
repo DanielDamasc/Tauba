@@ -9,8 +9,19 @@ os.environ["MPLCONFIGDIR"] = "C:/laragon/www/Tauba/temp_matplotlib_config"
 import matplotlib.pyplot as plt
 
 # Recebe o JSON passado pelo Laravel.
-restricoesJSON = sys.argv[1]
-restricoes = json.loads(restricoesJSON)
+dadosJSON = sys.argv[1]
+dados = json.loads(dadosJSON)
+
+# Solução ótima.
+solucao_otima = float(dados["solucao_otima"])
+
+# Função objetivo.
+func_obj = dados["funcao_objetivo"]
+c1 = float(func_obj["1"])
+c2 = float(func_obj["2"])
+
+# Restrições.
+restricoes = dados["restricoes"]
 
 # Inicializar limites para escala.
 xmax = 0
@@ -32,7 +43,7 @@ for restricao in restricoes:
     if len(coef) == 1:
         a = float(coef["1"])
         b = 0
-    
+
     if len(coef) == 2:
         a = float(coef["1"])
         b = float(coef["2"])
@@ -64,12 +75,25 @@ for restricao in restricoes:
     elif sinal == ">=":
         plt.fill_between(x, y, 50, where=(y >= 0), alpha=0.2)
 
-# Definindo o limite superior da escala.
-lim_sup = 2 * (max(xmax, ymax))
-
-# Configurações.
+# Definindo limites do gráfico.
+lim_sup = (max(xmax, ymax)) + 1
 plt.xlim(0, lim_sup)
 plt.ylim(0, lim_sup)
+
+# Gerar grid de pontos.
+X, Y = np.meshgrid(x, x)
+
+# Calcular valor da função objetivo em cada ponto.
+Z = c1 * X + c2 * Y
+
+# Define valores de isovalor entre 0 e a solução ótima.
+valores_obj = np.linspace(0, solucao_otima, 6)
+
+# Plotar as curvas de nível.
+contours = plt.contour(X, Y, Z, valores_obj, colors='red', linestyles='dashed')
+plt.clabel(contours, inline=True, fontsize=8, fmt="%.0f")
+
+# Configurações.
 plt.xlabel('x')
 plt.ylabel('y')
 plt.title('Região de Viabilidade - Simplex')
