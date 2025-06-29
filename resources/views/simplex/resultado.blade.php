@@ -202,7 +202,8 @@
         
         {{-- Resultado Final --}}
         <div class="max-w-2xl p-8 mx-auto mt-12 shadow-xl rounded-2xl
-             @if(isset($status) && ($status === 'otimo' || $status === 'otimo_inteiro')) bg-white border-l-8 border-green-500 
+             {{-- --- INÍCIO DA MODIFICAÇÃO: Adicionado 'multiplas_solucoes' à condição de sucesso --- --}}
+             @if(isset($status) && in_array($status, ['otimo', 'otimo_inteiro', 'multiplas_solucoes'])) bg-white border-l-8 border-green-500 
              @elseif(isset($status) && $status === 'ilimitado') bg-yellow-50 border-l-8 border-yellow-400
              @elseif(isset($status) && (str_starts_with($status, 'erro_') || $status === 'otimo_ou_erro_coluna_pivo' || $status === 'sem_solucao_inteira')) bg-red-50 border-l-8 border-red-400
              @else bg-gray-50 border-l-8 border-gray-400 @endif">
@@ -227,6 +228,63 @@
                         @endforeach
                     </div>
                 @endif
+            
+            {{-- --- INÍCIO DA MODIFICAÇÃO: Bloco dedicado para Múltiplas Soluções --- --}}
+            @elseif ($status === 'multiplas_solucoes' && isset($solucao) && is_array($solucao))
+                 <div class="flex items-center justify-center gap-3 mb-4 text-3xl font-extrabold text-green-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Solução Ótima Encontrada
+                </div>
+                <p class="mt-2 text-3xl font-bold text-center text-gray-800">
+                    Z = <span class="text-green-700">{{ number_format($solucao['Z'] ?? 0, 4) }}</span>
+                </p>
+                
+                {{-- Mensagem Específica e Aprimorada para Múltiplas Soluções --}}
+                <div class="p-4 mt-8 text-blue-800 bg-blue-100 border-l-4 border-blue-500 rounded-md">
+                    @if (!empty($solucaoAlternativa))
+                        @php
+                            // Função auxiliar para formatar um ponto em uma string (x1=4.00, x2=0.00)
+                            $formatarPonto = function($ponto) {
+                                $partes = [];
+                                // Filtra para pegar apenas as variáveis de decisão (ex: x1, x2, etc.)
+                                $variaveisDecisao = array_filter(array_keys($ponto), fn($k) => preg_match('/^x\d+$/', $k));
+                                sort($variaveisDecisao); // Garante a ordem (x1, x2, ...)
+                                foreach ($variaveisDecisao as $var) {
+                                    $partes[] = $var . '&nbsp;=&nbsp;' . number_format($ponto[$var], 2);
+                                }
+                                return '(' . implode(', ', $partes) . ')';
+                            };
+
+                            $ponto1_str = $formatarPonto($solucao);
+                            $ponto2_str = $formatarPonto($solucaoAlternativa);
+                        @endphp
+
+                        <h4 class="font-bold">Múltiplas Soluções Ótimas Encontradas</h4>
+                        <p class="mt-2">
+                            O problema possui infinitas soluções ótimas que se encontram em um segmento de reta. A solução apresentada é um dos pontos extremos dessa reta.
+                        </p>
+                        <div class="p-3 mt-3 space-y-2 text-gray-700 bg-white/50 rounded-md">
+                            <p><strong>Ponto Extremo 1:</strong> {!! $ponto1_str !!}</p>
+                            <p><strong>Ponto Extremo 2:</strong> {!! $ponto2_str !!}</p>
+                        </div>
+                        <p class="mt-3 text-sm">
+                            Qualquer combinação convexa entre esses dois pontos também é uma solução ótima.
+                        </p>
+                    @else
+                        {{-- Mensagem de fallback caso a solução alternativa não seja passada --}}
+                        <h4 class="font-bold">Múltiplas Soluções Ótimas</h4>
+                        <p class="mt-2">
+                            A solução acima é um dos pontos ótimos possíveis. Existem outras soluções que resultam no mesmo valor ótimo de Z.
+                        </p>
+                        @if (!empty($variaveisMultiplas))
+                        <p class="mt-1">
+                            Isso ocorre porque a(s) variável(is) não-básica(s) <strong>{{ implode(', ', $variaveisMultiplas) }}</strong> possui(em) custo reduzido zero.
+                        </p>
+                        @endif
+                    @endif
+                </div>
             @elseif (isset($status) && $status === 'sem_solucao_inteira')
                  <div class="flex items-center justify-center gap-3 mb-4 text-3xl font-extrabold text-red-700">
                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
@@ -236,9 +294,53 @@
                     Não foi possível encontrar uma solução viável inteira após explorar toda a árvore de decisão.
                 </p>
             @elseif (isset($status) && $status === 'ilimitado')
-                 {{-- ... (código existente para ilimitado) ... --}}
+                <div class="flex items-center justify-center gap-3 mb-4 text-3xl font-extrabold text-yellow-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                    </svg>
+                    Problema Ilimitado
+                </div>
+                <p class="mt-4 text-xl text-center text-yellow-800">
+                    A solução para o problema é ilimitada. Não há um valor ótimo finito.
+                    @php
+                        $lastIterationMessage = '';
+                        if(isset($iteracoes) && count($iteracoes) > 0) {
+                            $lastIter = end($iteracoes);
+                            if(isset($lastIter['mensagem'])) $lastIterationMessage = $lastIter['mensagem'];
+                        }
+                    @endphp
+                    @if(!empty($lastIterationMessage))
+                        <span class="block mt-2 text-sm">{{ $lastIterationMessage }}</span>
+                    @endif
+                </p>
+
+            @elseif (isset($status) && (str_starts_with($status, 'erro_') || $status === 'otimo_ou_erro_coluna_pivo'))
+                <div class="flex items-center justify-center gap-3 mb-4 text-3xl font-extrabold text-red-700">
+                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                    </svg>
+                    Erro no Processamento
+                </div>
+                <p class="mt-4 text-xl text-center text-red-800">
+                    Ocorreu um erro durante a execução do método Simplex.
+                    @php
+                        $detailedMessage = 'Consulte as iterações para mais detalhes.';
+                        if(isset($iteracoes) && count($iteracoes) > 0) {
+                            $lastIter = end($iteracoes);
+                            if(isset($lastIter['mensagem'])) $detailedMessage = $lastIter['mensagem'];
+                        } elseif (isset($mensagem)) { // Fallback to a general message if passed
+                            $detailedMessage = $mensagem;
+                        }
+                    @endphp
+                     <span class="block mt-2 text-sm">{{ $detailedMessage }} (Status: {{ $status }})</span>
+                </p>
             @else
-                 {{-- ... (código existente para outros erros) ... --}}
+                <div class="flex items-center justify-center gap-3 mb-4 text-3xl font-extrabold text-gray-700">
+                    Status Desconhecido
+                </div>
+                <p class="mt-4 text-xl text-center text-gray-800">
+                    Não foi possível determinar o resultado final do problema. Status: {{ $status ?? 'Não disponível' }}.
+                </p>
             @endif
         </div>
         

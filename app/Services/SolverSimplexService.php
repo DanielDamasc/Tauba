@@ -50,9 +50,6 @@ class SolverSimplexService
 
             $colunaPivo = $this->encontrarColunaPivo($tabela[0]['coeficientes']);
 
-            // Se nenhuma coluna pivô válida for encontrada, isso implica otimalidade (já tratada por deveContinuar)
-            // ou um problema se deveContinuar for verdadeiro mas nenhuma coluna válida foi encontrada (ex: todos os coeficientes de Z são zero, mas esperava-se que um não fosse).
-            // Esta verificação é mais uma salvaguarda.
             if ($colunaPivo === -1) {
                 $iteracoes[] = $this->formatarIteracao($tabela, null, null, $passo, "Nenhuma coluna pivô válida pôde ser selecionada (possivelmente ótimo ou erro de lógica).");
                  return [
@@ -65,95 +62,157 @@ class SolverSimplexService
             $linhaPivo = $this->encontrarLinhaPivo($tabela, $colunaPivo);
 
             if ($linhaPivo === null) {
-                // Isso significa que todos os coeficientes na coluna pivô (para as restrições) são <= 0.
                 $iteracoes[] = $this->formatarIteracao($tabela, $colunaPivo, null, $passo, "Problema ilimitado. Não foi possível encontrar uma linha pivô.");
                 return [
                     'iteracoes' => $iteracoes,
-                    'solucao' => null, // Nenhuma solução específica para problemas ilimitados
+                    'solucao' => null,
                     'status' => 'ilimitado'
                 ];
             }
             
-            // Armazena o valor do elemento pivô original para o log da iteração
             $elementoPivoOriginal = $tabela[$linhaPivo]['coeficientes'][$colunaPivo];
-            // Registra a iteração antes de pivotar
             $iteracoes[] = $this->formatarIteracao($tabela, $colunaPivo, $linhaPivo, $passo, null, $elementoPivoOriginal);
 
-
-            // Normaliza a linha pivô
             $pivoValor = $tabela[$linhaPivo]['coeficientes'][$colunaPivo];
-            // Verificação defensiva para o elemento pivô estar muito próximo de zero
             if (abs($pivoValor) < $this->tolerancia) {
                  $iteracoes[] = $this->formatarIteracao($tabela, $colunaPivo, $linhaPivo, $passo, "Erro: Elemento pivô (" . $pivoValor . ") muito próximo de zero. Instabilidade numérica ou problema degenerado.");
                  return [
                     'iteracoes' => $iteracoes,
-                    'solucao' => $this->extrairSolucao($tabela), // Retorna o estado atual
+                    'solucao' => $this->extrairSolucao($tabela),
                     'status' => 'erro_pivo_zero'
                  ];
             }
 
+            // --- Pivoteamento ---
+            // Normaliza a linha pivô
             for ($j = 0; $j < count($tabela[$linhaPivo]['coeficientes']); $j++) {
                 $tabela[$linhaPivo]['coeficientes'][$j] /= $pivoValor;
             }
             $tabela[$linhaPivo]['termo'] /= $pivoValor;
-            // Garante que o próprio elemento pivô se torne exatamente 1.0 após a normalização
             $tabela[$linhaPivo]['coeficientes'][$colunaPivo] = 1.0;
-
 
             // Atualiza as outras linhas
             for ($i = 0; $i < count($tabela); $i++) {
-                if ($i === $linhaPivo) continue; // Pula a própria linha pivô
+                if ($i === $linhaPivo) continue;
 
-                // O fator é o coeficiente atual na coluna pivô para a linha $i
                 $fator = $tabela[$i]['coeficientes'][$colunaPivo];
                 for ($j = 0; $j < count($tabela[$linhaPivo]['coeficientes']); $j++) {
                     $tabela[$i]['coeficientes'][$j] -= $fator * $tabela[$linhaPivo]['coeficientes'][$j];
                 }
                 $tabela[$i]['termo'] -= $fator * $tabela[$linhaPivo]['termo'];
-                // Garante que o coeficiente na coluna pivô se torne 0.0 para as linhas não-pivô
                  if(isset($tabela[$i]['coeficientes'][$colunaPivo])) {
                     $tabela[$i]['coeficientes'][$colunaPivo] = 0.0;
                  }
             }
             
-            // Limpa números muito pequenos para zero para mitigar o acúmulo de erros de ponto flutuante
-            foreach ($tabela as &$r) { // Usa referência para modificar o array diretamente
-                foreach ($r['coeficientes'] as &$c) { // Usa referência
+            foreach ($tabela as &$r) {
+                foreach ($r['coeficientes'] as &$c) {
                     if (abs($c) < $this->tolerancia) $c = 0.0;
                 }
-                unset($c); // quebra a referência
+                unset($c);
                 if (abs($r['termo']) < $this->tolerancia) $r['termo'] = 0.0;
             }
-            unset($r); // quebra a referência
+            unset($r);
         }
 
-        // Registra o estado final (solução ótima)
         $iteracoes[] = $this->formatarIteracao($tabela, null, null, $passo + 1, "Solução ótima encontrada.");
-
         $solucao = $this->extrairSolucao($tabela);
+        
+        // --- INÍCIO DA MODIFICAÇÃO: Verificação e Cálculo de Múltiplas Soluções ---
+        $status = 'otimo';
+        $variaveisMultiplas = [];
+        $solucaoAlternativa = [];
+
+        // 1. Identificar colunas básicas
+        $indicesColunasBasicas = [];
+        $numCoefs = count($tabela[0]['coeficientes']);
+        for ($j = 0; $j < $numCoefs; $j++) {
+            $contagemDeUns = 0;
+            $outrosNaoZero = false;
+            for ($i = 1; $i < count($tabela); $i++) {
+                if (abs($tabela[$i]['coeficientes'][$j] - 1.0) < $this->tolerancia) {
+                    $contagemDeUns++;
+                } elseif (abs($tabela[$i]['coeficientes'][$j]) > $this->tolerancia) {
+                    $outrosNaoZero = true;
+                    break;
+                }
+            }
+            if (!$outrosNaoZero && $contagemDeUns === 1) {
+                $indicesColunasBasicas[] = $j;
+            }
+        }
+
+        // 2. Verificar variáveis não-básicas na linha Z
+        for ($j = 0; $j < $numCoefs; $j++) {
+            if (!in_array($j, $indicesColunasBasicas)) {
+                if (isset($tabela[0]['coeficientes'][$j]) && abs($tabela[0]['coeficientes'][$j]) < $this->tolerancia) {
+                    if ($this->encontrarLinhaPivo($tabela, $j) !== null) {
+                       $variaveisMultiplas[] = 'x' . ($j + 1);
+                    }
+                }
+            }
+        }
+
+        // 3. Se múltiplas soluções existem, calcular um ponto alternativo
+        if (!empty($variaveisMultiplas)) {
+            $status = 'multiplas_solucoes';
+
+            // Escolhe a primeira variável elegível para entrar na base
+            $primeiraVarParaPivotar = $variaveisMultiplas[0];
+            $colunaPivoAlt = (int)substr($primeiraVarParaPivotar, 1) - 1;
+            
+            $linhaPivoAlt = $this->encontrarLinhaPivo($tabela, $colunaPivoAlt);
+            
+            if ($linhaPivoAlt !== null) {
+                // Cria uma cópia do tableau para não alterar o original
+                $tabelaAlternativa = $tabela;
+                $pivoValor = $tabelaAlternativa[$linhaPivoAlt]['coeficientes'][$colunaPivoAlt];
+
+                // Pivoteamento na tabela alternativa
+                // Normaliza a linha pivô
+                for ($j = 0; $j < count($tabelaAlternativa[$linhaPivoAlt]['coeficientes']); $j++) {
+                    $tabelaAlternativa[$linhaPivoAlt]['coeficientes'][$j] /= $pivoValor;
+                }
+                $tabelaAlternativa[$linhaPivoAlt]['termo'] /= $pivoValor;
+
+                // Atualiza as outras linhas
+                for ($i = 0; $i < count($tabelaAlternativa); $i++) {
+                    if ($i === $linhaPivoAlt) continue;
+                    $fator = $tabelaAlternativa[$i]['coeficientes'][$colunaPivoAlt];
+                    for ($j = 0; $j < count($tabelaAlternativa[$linhaPivoAlt]['coeficientes']); $j++) {
+                        $tabelaAlternativa[$i]['coeficientes'][$j] -= $fator * $tabelaAlternativa[$linhaPivoAlt]['coeficientes'][$j];
+                    }
+                    $tabelaAlternativa[$i]['termo'] -= $fator * $tabelaAlternativa[$linhaPivoAlt]['termo'];
+                }
+
+                // Extrai a nova solução do tableau modificado
+                $solucaoAlternativa = $this->extrairSolucao($tabelaAlternativa);
+            }
+        }
+        // --- FIM DA MODIFICAÇÃO ---
 
         return [
             'iteracoes' => $iteracoes,
             'solucao' => $solucao,
-            'status' => 'otimo'
+            'status' => $status,
+            'variaveisMultiplas' => $variaveisMultiplas,
+            'solucaoAlternativa' => $solucaoAlternativa // Envia a solução alternativa para a view
         ];
     }
 
     /**
      * Verifica se o algoritmo Simplex deve continuar.
-     * Para maximização: continua se houver coeficientes negativos na linha Z.
-     * Para minimização: continua se houver coeficientes positivos na linha Z.
      */
     private function deveContinuar(array $coeficientesZ): bool
     {
         if ($this->tipoObjetivo === 'max') {
             foreach ($coeficientesZ as $value) {
-                if ($value < -$this->tolerancia) return true; // Se qualquer valor for significativamente negativo
+                if ($value < -$this->tolerancia) return true;
             }
             return false;
         } else { // min
             foreach ($coeficientesZ as $value) {
-                if ($value > $this->tolerancia) return true; // Se qualquer valor for significativamente positivo
+                if ($value > $this->tolerancia) return true;
             }
             return false;
         }
@@ -161,9 +220,6 @@ class SolverSimplexService
 
     /**
      * Encontra a coluna pivô.
-     * Para maximização: coluna com o coeficiente mais negativo na linha Z.
-     * Para minimização: coluna com o coeficiente mais positivo na linha Z.
-     * Retorna -1 se nenhuma coluna pivô adequada for encontrada (deve estar alinhado com deveContinuar).
      */
     private function encontrarColunaPivo(array $coeficientesZ): int
     {
@@ -171,7 +227,7 @@ class SolverSimplexService
         $numCoefs = count($coeficientesZ);
 
         if ($this->tipoObjetivo === 'max') {
-            $minVal = -$this->tolerancia; // Inicializa para encontrar algo estritamente mais negativo
+            $minVal = -$this->tolerancia;
             for ($j = 0; $j < $numCoefs; $j++) {
                 if ($coeficientesZ[$j] < $minVal) {
                     $minVal = $coeficientesZ[$j];
@@ -179,7 +235,7 @@ class SolverSimplexService
                 }
             }
         } else { // min
-            $maxVal = $this->tolerancia; // Inicializa para encontrar algo estritamente mais positivo
+            $maxVal = $this->tolerancia;
             for ($j = 0; $j < $numCoefs; $j++) {
                 if ($coeficientesZ[$j] > $maxVal) {
                     $maxVal = $coeficientesZ[$j];
@@ -192,7 +248,6 @@ class SolverSimplexService
 
     /**
      * Encontra a linha pivô usando o teste da razão mínima não-negativa.
-     * Retorna null se nenhuma linha pivô adequada for encontrada (problema ilimitado).
      */
     private function encontrarLinhaPivo(array $tabela, int $colunaPivo): ?int
     {
@@ -200,33 +255,22 @@ class SolverSimplexService
         $minRazaoNaoNegativa = PHP_FLOAT_MAX;
         $numLinhas = count($tabela);
 
-        for ($i = 1; $i < $numLinhas; $i++) { // Itera através das linhas de restrição (pula a linha Z no índice 0)
+        for ($i = 1; $i < $numLinhas; $i++) {
             if (!isset($tabela[$i]['coeficientes'][$colunaPivo])) {
-                // Este caso idealmente não deveria acontecer se a tabela estiver bem formada
                 continue;
             }
 
             $coeficienteColunaPivo = $tabela[$i]['coeficientes'][$colunaPivo];
             $termoIndependente = $tabela[$i]['termo'];
 
-            // O denominador (coeficiente na coluna pivô para a linha atual) deve ser estritamente positivo.
             if ($coeficienteColunaPivo > $this->tolerancia) {
-                // O numerador (termo do lado direito) deve ser não-negativo para o teste da razão padrão.
-                // Se o lado direito for negativo e o coeficiente da coluna pivô for positivo, esta linha não é uma candidata
-                // no simplex primal padrão (poderia ser no simplex dual).
-                // Consideramos valores muito próximos de zero como não-negativos.
                 if ($termoIndependente >= -$this->tolerancia) {
                     $razao = $termoIndependente / $coeficienteColunaPivo;
-
-                    // A própria razão deve ser não-negativa.
-                    // (Esta verificação é um tanto redundante se $termoIndependente >= 0 e $coeficienteColunaPivo > 0)
-                    if ($razao >= -$this->tolerancia) { // Verifica se a razão é não-negativa (ou muito próxima disso)
+                    if ($razao >= -$this->tolerancia) {
                          if ($razao < $minRazaoNaoNegativa) {
                             $minRazaoNaoNegativa = $razao;
                             $linhaPivo = $i;
                         }
-                        // A regra de Bland ou outras regras de desempate podem ser implementadas aqui se a ciclagem for uma preocupação.
-                        // Por enquanto, a primeira linha encontrada com a razão mínima é escolhida.
                     }
                 }
             }
@@ -240,7 +284,7 @@ class SolverSimplexService
     private function formatarIteracao(array $tabela, ?int $colunaPivo, ?int $linhaPivo, int $passo, string $mensagem = null, ?float $elementoPivoOriginal = null): array
     {
         $dadosFormatados = [];
-        $precisaoRound = 4; // Casas decimais para exibição
+        $precisaoRound = 4;
 
         foreach ($tabela as $idx => $linha) {
             $coefsFormatados = array_map(fn($c) => round($c, $precisaoRound), $linha['coeficientes']);
@@ -249,15 +293,15 @@ class SolverSimplexService
             $dadosFormatados[] = [
                 'coeficientes' => $coefsFormatados,
                 'termo' => $termoFormatado,
-                'isLinhaPivo' => ($idx === $linhaPivo), // Para destacar a linha pivô
+                'isLinhaPivo' => ($idx === $linhaPivo),
             ];
         }
 
         $iteracaoInfo = [
             'passo' => $passo,
             'tabela' => $dadosFormatados,
-            'colunaPivo' => $colunaPivo, // Alterado de colunaPivoIndex
-            'linhaPivo' => $linhaPivo,   // Alterado de linhaPivoIndex
+            'colunaPivo' => $colunaPivo,
+            'linhaPivo' => $linhaPivo,
         ];
 
         if ($elementoPivoOriginal !== null && $linhaPivo !== null && $colunaPivo !== null) {
@@ -273,72 +317,46 @@ class SolverSimplexService
 
    /**
      * Extrai a solução final do tableau.
-     * Nota: A heurística para identificar o número de variáveis de decisão originais
-     * pode ser frágil para problemas com tipos de restrição mistos ('<=', '>=', '=').
-     * Idealmente, o número de variáveis de decisão ou seus índices de coluna deveriam ser conhecidos.
      */
     private function extrairSolucao(array $tabela): array
     {
         $solucao = [];
         if (empty($tabela) || !isset($tabela[0]['coeficientes']) || empty($tabela[0]['coeficientes'])) {
             $solucao['Z'] = 0.0;
-            return $solucao; // Tableau inválido ou vazio
+            return $solucao;
         }
 
-        // Heurística para estimar o número de variáveis de decisão originais.
-        // Isso assume que variáveis de folga/excesso/artificiais foram adicionadas à direita das variáveis de decisão.
-        // Essa contagem é usada para iterar através das colunas de variáveis de decisão potenciais.
-        // É uma estimativa e pode não ser robusta para todos os casos sem mais informações.
         $numTotalColunasCoeficientes = count($tabela[0]['coeficientes']);
-        $numLinhasRestricoes = count($tabela) - 1; // Número de linhas de restrição (excluindo a linha Z)
         
-        // Uma heurística comum: #VariaveisDeDecisao = TotalDeVariaveis - #VariaveisDeFolgaBasicas (se todas <=)
-        // Ou, de forma mais geral, é o número de colunas antes do início das variáveis de folga/excesso/artificiais.
-        // Se não soubermos isso, podemos tentar identificar variáveis básicas entre as primeiras N colunas.
-        // Por enquanto, vamos assumir que a heurística original estava tentando chegar a isso.
-        // Uma maneira mais robusta seria passar o número de variáveis de decisão.
-        // Vamos tentar inferir com base em quais variáveis são básicas.
-        
-        $numMaxPossiveisVariaveisDecisao = $numTotalColunasCoeficientes; // Itera inicialmente até todas as colunas de coeficientes
-
-        for ($j = 0; $j < $numMaxPossiveisVariaveisDecisao; $j++) { // Itera através de todas as colunas
+        for ($j = 0; $j < $numTotalColunasCoeficientes; $j++) {
             $isColunaBasicaParaRestricao = false;
             $linhaDaBase = -1;
             $contagemDeUnsNaColuna = 0;
             $outrosValoresNaoZeroNaColuna = false;
 
-            // Verifica se a coluna $j$ é básica em alguma linha de restrição
-            for ($i = 1; $i < count($tabela); $i++) { // Começa da linha 1 (restrições)
+            for ($i = 1; $i < count($tabela); $i++) {
                 if (!isset($tabela[$i]['coeficientes'][$j])) continue;
 
                 $valorCoef = $tabela[$i]['coeficientes'][$j];
 
                 if (abs($valorCoef - 1.0) < $this->tolerancia) {
                     $contagemDeUnsNaColuna++;
-                    $linhaDaBase = $i; // Linha potencial onde esta variável é básica
+                    $linhaDaBase = $i;
                 } elseif (abs($valorCoef) > $this->tolerancia) {
                     $outrosValoresNaoZeroNaColuna = true;
-                    // Se houver outro valor não-zero, não é uma coluna básica limpa (parte da matriz identidade)
                     break; 
                 }
             }
 
-            // Uma variável é básica se sua coluna tem um '1' e todos os outros elementos são '0' nas linhas de restrição,
-            // E seu coeficiente na linha Z é '0' (para um tableau ótimo).
             if ($contagemDeUnsNaColuna === 1 && !$outrosValoresNaoZeroNaColuna) {
                 if (isset($tabela[0]['coeficientes'][$j]) && abs($tabela[0]['coeficientes'][$j]) < $this->tolerancia) {
-                    // Esta variável (x_j+1) é básica e seu valor é o lado direito da linha onde ela é '1'.
                     $solucao['x' . ($j + 1)] = round($tabela[$linhaDaBase]['termo'], 4);
                 } else {
-                    // Se for básica nas restrições mas o coeficiente na linha Z não for zero, ela é não-básica na solução ótima (valor 0)
-                    // ou é uma variável artificial que não deveria estar na solução.
-                    // Por simplicidade, se não for zero na linha Z, a tratamos como não-básica (valor 0 para decisão/folga/excesso).
-                     if (!array_key_exists('x' . ($j + 1), $solucao)) { // Evita sobrescrever se já foi definido por outra regra
+                     if (!array_key_exists('x' . ($j + 1), $solucao)) {
                         $solucao['x' . ($j + 1)] = 0.0;
                     }
                 }
             } else {
-                 // Se não for uma coluna básica limpa, é não-básica, então seu valor é 0.
                  if (!array_key_exists('x' . ($j + 1), $solucao)) {
                     $solucao['x' . ($j + 1)] = 0.0;
                 }
@@ -347,12 +365,7 @@ class SolverSimplexService
         
         $valorZ = round($tabela[0]['termo'], 4);
         
-        if ($this->tipoObjetivo === 'min') {
-             $solucao['Z'] = $valorZ;
-        } else {
-             $solucao['Z'] = $valorZ;
-        }
-
+        $solucao['Z'] = $valorZ;
 
         return $solucao;
     }
