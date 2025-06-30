@@ -123,26 +123,31 @@ class SolverSimplexService
         $variaveisMultiplas = [];
         $solucaoAlternativa = [];
 
-        // 1. Identificar colunas básicas
+        // 1. Identificar colunas básicas (LÓGICA CORRIGIDA)
+        // Esta lógica robusta primeiro encontra a variável básica para cada linha de restrição.
         $indicesColunasBasicas = [];
+        $numLinhas = count($tabela);
         $numCoefs = count($tabela[0]['coeficientes']);
-        for ($j = 0; $j < $numCoefs; $j++) {
-            $contagemDeUns = 0;
-            $outrosNaoZero = false;
-            for ($i = 1; $i < count($tabela); $i++) {
+        for ($i = 1; $i < $numLinhas; $i++) { // Itera por cada linha de restrição
+            for ($j = 0; $j < $numCoefs; $j++) { // Procura a coluna básica para esta linha
                 if (abs($tabela[$i]['coeficientes'][$j] - 1.0) < $this->tolerancia) {
-                    $contagemDeUns++;
-                } elseif (abs($tabela[$i]['coeficientes'][$j]) > $this->tolerancia) {
-                    $outrosNaoZero = true;
-                    break;
+                    $eColunaBasicaNestaPosicao = true;
+                    for ($k = 0; $k < $numLinhas; $k++) {
+                        if ($i === $k) continue;
+                        if (abs($tabela[$k]['coeficientes'][$j]) > $this->tolerancia) {
+                            $eColunaBasicaNestaPosicao = false;
+                            break;
+                        }
+                    }
+                    if ($eColunaBasicaNestaPosicao) {
+                        $indicesColunasBasicas[] = $j;
+                        break; // Vai para a próxima linha
+                    }
                 }
             }
-            if (!$outrosNaoZero && $contagemDeUns === 1) {
-                $indicesColunasBasicas[] = $j;
-            }
         }
-
-        // 2. Verificar variáveis não-básicas na linha Z
+        
+        // 2. Verificar variáveis não-básicas na linha Z (Este bloco agora funcionará corretamente)
         for ($j = 0; $j < $numCoefs; $j++) {
             if (!in_array($j, $indicesColunasBasicas)) {
                 if (isset($tabela[0]['coeficientes'][$j]) && abs($tabela[0]['coeficientes'][$j]) < $this->tolerancia) {
@@ -153,40 +158,76 @@ class SolverSimplexService
             }
         }
 
-        // 3. Se múltiplas soluções existem, calcular um ponto alternativo
-        if (!empty($variaveisMultiplas)) {
+        // 3. Se múltiplas soluções existem, calcular um ponto alternativo (Este bloco não precisa de alteração)
+       if (!empty($variaveisMultiplas)) {
             $status = 'multiplas_solucoes';
 
-            // Escolhe a primeira variável elegível para entrar na base
-            $primeiraVarParaPivotar = $variaveisMultiplas[0];
-            $colunaPivoAlt = (int)substr($primeiraVarParaPivotar, 1) - 1;
-            
-            $linhaPivoAlt = $this->encontrarLinhaPivo($tabela, $colunaPivoAlt);
+            // Abandona a ideia de pivoteamento. Vamos calcular o novo ponto manualmente.
+            $linhaPivoAlt = $this->encontrarLinhaPivo($tabela, (int)substr($variaveisMultiplas[0], 1) - 1);
             
             if ($linhaPivoAlt !== null) {
-                // Cria uma cópia do tableau para não alterar o original
-                $tabelaAlternativa = $tabela;
-                $pivoValor = $tabelaAlternativa[$linhaPivoAlt]['coeficientes'][$colunaPivoAlt];
+                // Inicializa a solução alternativa como uma cópia da original.
+                $solucaoAlternativa = $solucao;
 
-                // Pivoteamento na tabela alternativa
-                // Normaliza a linha pivô
-                for ($j = 0; $j < count($tabelaAlternativa[$linhaPivoAlt]['coeficientes']); $j++) {
-                    $tabelaAlternativa[$linhaPivoAlt]['coeficientes'][$j] /= $pivoValor;
-                }
-                $tabelaAlternativa[$linhaPivoAlt]['termo'] /= $pivoValor;
-
-                // Atualiza as outras linhas
-                for ($i = 0; $i < count($tabelaAlternativa); $i++) {
-                    if ($i === $linhaPivoAlt) continue;
-                    $fator = $tabelaAlternativa[$i]['coeficientes'][$colunaPivoAlt];
-                    for ($j = 0; $j < count($tabelaAlternativa[$linhaPivoAlt]['coeficientes']); $j++) {
-                        $tabelaAlternativa[$i]['coeficientes'][$j] -= $fator * $tabelaAlternativa[$linhaPivoAlt]['coeficientes'][$j];
+                // A) Identifica a variável que vai ENTRAR na base e a que vai SAIR.
+                $colunaEntrando = (int)substr($variaveisMultiplas[0], 1) - 1;
+                $varEntrando = 'x' . ($colunaEntrando + 1);
+                
+                $colunaSaindo = -1;
+                // A variável que sai é a que é básica na linha do pivô.
+                for ($j = 0; $j < $numCoefs; $j++) {
+                    // Verifica se a coluna $j é um vetor base (1 na linha do pivô, 0 nas outras)
+                    if (abs($tabela[$linhaPivoAlt]['coeficientes'][$j] - 1.0) < $this->tolerancia) {
+                        $eColunaBasica = true;
+                        for ($i = 1; $i < $numLinhas; $i++) {
+                            if ($i != $linhaPivoAlt && abs($tabela[$i]['coeficientes'][$j]) > $this->tolerancia) {
+                                $eColunaBasica = false;
+                                break;
+                            }
+                        }
+                        if ($eColunaBasica) {
+                            $colunaSaindo = $j;
+                            break;
+                        }
                     }
-                    $tabelaAlternativa[$i]['termo'] -= $fator * $tabelaAlternativa[$linhaPivoAlt]['termo'];
+                }
+                $varSaindo = ($colunaSaindo !== -1) ? 'x' . ($colunaSaindo + 1) : null;
+
+                // B) Calcula o valor da variável que ENTRA (theta).
+                $pivoValor = $tabela[$linhaPivoAlt]['coeficientes'][$colunaEntrando];
+                $theta = $tabela[$linhaPivoAlt]['termo'] / $pivoValor;
+
+                // C) Define os novos valores na solução alternativa.
+                $solucaoAlternativa[$varEntrando] = $theta;
+                if ($varSaindo) {
+                    $solucaoAlternativa[$varSaindo] = 0;
                 }
 
-                // Extrai a nova solução do tableau modificado
-                $solucaoAlternativa = $this->extrairSolucao($tabelaAlternativa);
+                // D) Atualiza os valores das OUTRAS variáveis que permaneceram na base.
+                foreach ($solucaoAlternativa as $var => &$valor) {
+                    if ($var == 'Z' || $var == $varEntrando || $var == $varSaindo || $valor == 0) continue;
+                    
+                    // Encontra a linha da variável básica atual
+                    $linhaVarAtual = -1;
+                    $colVarAtual = (int)substr($var, 1) - 1;
+                    for ($i = 1; $i < $numLinhas; $i++) {
+                        if (abs($tabela[$i]['coeficientes'][$colVarAtual] - 1.0) < $this->tolerancia) {
+                            $linhaVarAtual = $i;
+                            break;
+                        }
+                    }
+                    
+                    if ($linhaVarAtual != -1) {
+                        $coeficienteCruzado = $tabela[$linhaVarAtual]['coeficientes'][$colunaEntrando];
+                        $valor -= $coeficienteCruzado * $theta; // Fórmula: Novo Valor = Velho Valor - a_ik * theta
+                    }
+                }
+                unset($valor); // Quebra a referência
+
+                // E) Arredonda todos os valores para uma exibição limpa.
+                foreach ($solucaoAlternativa as $key => $val) {
+                    $solucaoAlternativa[$key] = round($val, 4);
+                }
             }
         }
         // --- FIM DA MODIFICAÇÃO ---
@@ -321,51 +362,51 @@ class SolverSimplexService
     private function extrairSolucao(array $tabela): array
     {
         $solucao = [];
-        if (empty($tabela) || !isset($tabela[0]['coeficientes']) || empty($tabela[0]['coeficientes'])) {
-            $solucao['Z'] = 0.0;
-            return $solucao;
+        if (empty($tabela) || !isset($tabela[0]['coeficientes'])) {
+            return ['Z' => 0.0];
         }
 
-        $numTotalColunasCoeficientes = count($tabela[0]['coeficientes']);
+        $numLinhas = count($tabela);
+        $numCoefs = count($tabela[0]['coeficientes']);
         
-        for ($j = 0; $j < $numTotalColunasCoeficientes; $j++) {
-            $isColunaBasicaParaRestricao = false;
-            $linhaDaBase = -1;
-            $contagemDeUnsNaColuna = 0;
-            $outrosValoresNaoZeroNaColuna = false;
+        // Array para rastrear se uma linha de restrição já foi usada para uma variável básica.
+        $linhaJaUsada = array_fill(1, $numLinhas - 1, false);
 
-            for ($i = 1; $i < count($tabela); $i++) {
-                if (!isset($tabela[$i]['coeficientes'][$j])) continue;
+        // 1. Inicializa todas as variáveis como não-básicas (valor 0)
+        for ($j = 0; $j < $numCoefs; $j++) {
+            $solucao['x' . ($j + 1)] = 0.0;
+        }
 
-                $valorCoef = $tabela[$i]['coeficientes'][$j];
+        // 2. Itera por cada COLUNA para encontrar as variáveis básicas
+        for ($j = 0; $j < $numCoefs; $j++) {
+            $linhaDoPivo = -1;
+            $isColunaBasica = true;
 
-                if (abs($valorCoef - 1.0) < $this->tolerancia) {
-                    $contagemDeUnsNaColuna++;
-                    $linhaDaBase = $i;
-                } elseif (abs($valorCoef) > $this->tolerancia) {
-                    $outrosValoresNaoZeroNaColuna = true;
-                    break; 
-                }
-            }
-
-            if ($contagemDeUnsNaColuna === 1 && !$outrosValoresNaoZeroNaColuna) {
-                if (isset($tabela[0]['coeficientes'][$j]) && abs($tabela[0]['coeficientes'][$j]) < $this->tolerancia) {
-                    $solucao['x' . ($j + 1)] = round($tabela[$linhaDaBase]['termo'], 4);
-                } else {
-                     if (!array_key_exists('x' . ($j + 1), $solucao)) {
-                        $solucao['x' . ($j + 1)] = 0.0;
+            // Verifica se a coluna tem um único '1' e o resto '0's (nas restrições)
+            for ($i = 1; $i < $numLinhas; $i++) {
+                $coef = $tabela[$i]['coeficientes'][$j] ?? 0.0;
+                if (abs($coef - 1.0) < $this->tolerancia) {
+                    if ($linhaDoPivo !== -1) { // Já encontrou um '1' nesta coluna
+                        $isColunaBasica = false;
+                        break;
                     }
+                    $linhaDoPivo = $i;
+                } elseif (abs($coef) > $this->tolerancia) { // Encontrou outro valor que não é 0 nem 1
+                    $isColunaBasica = false;
+                    break;
                 }
-            } else {
-                 if (!array_key_exists('x' . ($j + 1), $solucao)) {
-                    $solucao['x' . ($j + 1)] = 0.0;
-                }
+            }
+
+            // 3. Se a coluna é básica E a sua linha de pivô ainda não foi usada
+            if ($isColunaBasica && $linhaDoPivo !== -1 && !$linhaJaUsada[$linhaDoPivo]) {
+                // Atribui o valor e MARCA a linha como usada
+                $solucao['x' . ($j + 1)] = round($tabela[$linhaDoPivo]['termo'], 4);
+                $linhaJaUsada[$linhaDoPivo] = true;
             }
         }
         
-        $valorZ = round($tabela[0]['termo'], 4);
-        
-        $solucao['Z'] = $valorZ;
+        // 4. O valor de Z é sempre o termo na linha 0
+        $solucao['Z'] = round($tabela[0]['termo'], 4);
 
         return $solucao;
     }
