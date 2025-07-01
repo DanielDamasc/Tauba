@@ -80,6 +80,11 @@ lim_sup = (max(xmax, ymax)) + 1
 plt.xlim(0, lim_sup)
 plt.ylim(0, lim_sup)
 
+# Definindo o salto do grid do gráfico.
+ticks = np.arange(0, lim_sup, 1)
+plt.xticks(ticks)
+plt.yticks(ticks)
+
 # Gerar grid de pontos.
 X, Y = np.meshgrid(x, x)
 

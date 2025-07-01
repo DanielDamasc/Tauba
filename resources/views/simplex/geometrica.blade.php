@@ -38,18 +38,17 @@
         </div>
 
         {{-- Resultado Final --}}
-        <div
-            class="max-w-2xl p-8 mx-auto mt-16 text-center bg-amber-50 border-l-8 border-amber-800 shadow-xl rounded-2xl">
-            <div class="flex items-center justify-center gap-3 mb-4 text-4xl font-extrabold text-amber-800">
-                Solução ótima encontrada
+        @if(isset($solucao))
+            <div
+                class="max-w-2xl p-8 mx-auto mt-16 text-center bg-amber-50 border-l-8 border-amber-800 shadow-xl rounded-2xl">
+                <div class="flex items-center justify-center gap-3 mb-4 text-4xl font-extrabold text-amber-800">
+                    Solução ótima encontrada
+                </div>
+                <p class="mt-2 text-3xl font-bold text-amber-900">
+                    Z = <span class="text-amber-800">{{$solucao}}</span>
+                </p>
             </div>
-            <p class="mt-2 text-3xl font-bold text-amber-900">
-                Z = <span class="text-amber-800">{{$solucao}}</span>
-            </p>
-            <p class="mt-4 text-xl text-amber-900">
-                <span class="font-semibold text-amber-800"></span>&nbsp;&nbsp;
-            </p>
-        </div>
+        @endif
 
         {{-- Botão para salvar um problema no filesystem. --}}
         <div class="flex justify-center">
